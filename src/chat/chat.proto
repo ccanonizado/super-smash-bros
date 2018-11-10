@@ -1,9 +1,4 @@
-/*
-
-Server - 202.92.144.45
-Port - 80
-
-*/
+// Defined from TCP Specifications
 
 syntax = "proto2";
 
