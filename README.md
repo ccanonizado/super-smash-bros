@@ -44,7 +44,7 @@ Rebasing:
 git add .
 git commit -m "Message"
 git fetch
-git rebase origin/version
+git rebase origin/master
 
 IF THERE ARE NO CONFLICTS:
 git push origin HEAD
