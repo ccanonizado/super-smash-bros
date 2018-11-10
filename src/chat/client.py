@@ -21,6 +21,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     s.send(connect.SerializeToString())
 
+    data = s.recv(1024)
+
     while(True):
         chat.type = chat_pb2.TcpPacket.CHAT 
         
@@ -36,4 +38,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
         message = message.ParseFromString(data)
 
-        print(data)
+        print(message)
