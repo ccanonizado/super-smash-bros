@@ -28,8 +28,8 @@ message TcpPacket {
         }
 
         required PacketType type = 1;
-        optional Player player = 2,S;
-        optional DisconnectPacket.Update update = 3,S;
+        optional Player player = 2;
+        optional DisconnectPacket.Update update = 3;
     }
 
     message ConnectPacket {
@@ -40,25 +40,25 @@ message TcpPacket {
 
         required PacketType type = 1;
         required Player player = 2;
-        optional string lobby_id = 3,C;
-        optional ConnectPacket.Update update = 4,S;    
+        optional string lobby_id = 3;
+        optional ConnectPacket.Update update = 4;    
     }
 
     message CreateLobbyPacket {
         required PacketType type = 1;
-        optional string lobby_id = 2,S;
-        optional int32 max_players = 3,C;
+        optional string lobby_id = 2;
+        optional int32 max_players = 3;
     }
 
     message ChatPacket {
         required PacketType type = 1;
         required string message = 2;
-        optional Player player = 3,S;
+        optional Player player = 3;
     }
 
     message PlayerListPacket {
         required PacketType type = 1;
-        repeated Player player_list = 2,S;
+        repeated Player player_list = 2;
     }
 
     message ErrLdnePacket {
