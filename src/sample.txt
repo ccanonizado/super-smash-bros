@@ -1,6 +1,2 @@
-<<<<<<< 34ed1601f733651719ebbe17ab2c5a92f65f5290
-Lol
-=======
 Test
 Sky
->>>>>>> Add name
