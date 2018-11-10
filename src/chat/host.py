@@ -22,18 +22,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     lobby_id = lobby.lobby_id
 
-    chat.type = chat_pb2.TcpPacket.CONNECT
-
-    connect = chat.ConnectPacket()
-    connect.type = chat_pb2.TcpPacket.CONNECT
-    
-    print("Enter player name: ", end="")
-    player = chat_pb2.Player()
-    player.name = input()
-
-    # line 35 does not work - cannot assign message to connect packet    
-    connect.player = player
-    connect.lobby_id = lobby_id
-
-    s.send(connect.SerializeToString())
-
+    print(lobby_id)
