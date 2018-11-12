@@ -2,6 +2,7 @@ import player_pb2
 import tcp_packet_pb2
 import socket
 import select
+import sys
 from threading import Thread
 
 thread = Thread()
@@ -11,16 +12,6 @@ packet = tcp_packet_pb2.TcpPacket()
 HOST = '202.92.144.45'
 PORT = 80
 BUFFER = 1024
-
-def receiveChat(s):
-	data = s.recv(BUFFER)
-	if(data):
-		chat = packet.ChatPacket()
-		chat.type = packet.CHAT
-		packet.ParseFromString(data)
-		return packet
-	else:
-		return 0
 
 def sendAndReceive(packet, s):
 	s.send(packet.SerializeToString())
@@ -110,10 +101,38 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 			print("Type lp() to list active players. Enjoy!")
 			print()
 
+			sys.stdout.write("Enter message (q to quit): ")
+			sys.stdout.flush()
 			while(True):
-				print("Enter message (q to quit): ", end="")
-				message = input()
+				r, w, x = select.select([sys.stdin, s], [], [])
+				if not r:
+					continue
+				if r[0] is sys.stdin:
+					message = input()
+					if message == "q":
+						s.close()
+						break
+					elif message == "lp()":
+						players = listPlayers(packet)
+						players = sendAndReceive(players, s)
+						print("Current players: ", end="")
+						for player in players.player_list:
+							print("{} ".format(player.name), end="")
+						print()
+					else:
+						chat = chatInLobby(packet, message)
+						s.send(chat.SerializeToString())
+						sys.stdout.flush()
+				else:
+					chat = packet.ChatPacket()
+					data = s.recv(BUFFER)
+					chat.ParseFromString(data)
+					print("{}: {}".format(chat.player.name, chat.message))
 
+				# print("Enter message (q to quit): ", end="")
+				# message = input()
+
+				'''
 				if message == "lp()":
 					players = listPlayers(packet)
 					players = sendAndReceive(players, s)
@@ -133,6 +152,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 					chat = chatInLobby(packet, message)
 					chat = sendAndReceive(chat, s)
 					print("{}: {}".format(chat.player.name, chat.message))
+				'''
 
 		# exit
 		elif choice == 3:
