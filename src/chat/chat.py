@@ -1,11 +1,8 @@
-import player_pb2
 import tcp_packet_pb2
 import socket
 import select
 import sys
-from threading import Thread
 
-thread = Thread()
 packet = tcp_packet_pb2.TcpPacket()
 
 # server parameters
@@ -13,6 +10,7 @@ HOST = '202.92.144.45'
 PORT = 80
 BUFFER = 1024
 
+# for moularization
 def sendAndReceive(packet, s):
 	s.send(packet.SerializeToString())
 	data = s.recv(BUFFER)
@@ -75,6 +73,7 @@ def disconnectChat(packet):
 
 	return disconnect
 
+# connect sockets to server
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 	s.connect((HOST, PORT))
 
@@ -126,33 +125,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 				else:
 					chat = packet.ChatPacket()
 					data = s.recv(BUFFER)
-					chat.ParseFromString(data)
-					print("{}: {}".format(chat.player.name, chat.message))
-
-				# print("Enter message (q to quit): ", end="")
-				# message = input()
-
-				'''
-				if message == "lp()":
-					players = listPlayers(packet)
-					players = sendAndReceive(players, s)
-					print("Current players: ", end="")
-					for player in players.player_list:
-						print("{} ".format(player.name), end="")
-					print()
-
-				elif message == 'q':
-					disconnect = disconnectChat(packet)
-					disconnect = sendAndReceive(disconnect, s)
-					print("You have been disconnected.")
-					print()
-					break
-
-				else:
-					chat = chatInLobby(packet, message)
-					chat = sendAndReceive(chat, s)
-					print("{}: {}".format(chat.player.name, chat.message))
-				'''
+					packet.ParseFromString(data)
+					if(packet.type == packet.CHAT):
+						chat.ParseFromString(data)
+						print("{}: {}".format(chat.player.name, chat.message))
 
 		# exit
 		elif choice == 3:
