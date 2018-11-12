@@ -100,7 +100,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 			print("Type lp() to list active players. Enjoy!")
 			print()
 
-			sys.stdout.write("Enter message (q to quit): ")
+			sys.stdout.write("Enter message (q to quit): \n")
 			sys.stdout.flush()
 			while(True):
 				r, w, x = select.select([sys.stdin, s], [], [])
@@ -109,6 +109,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 				if r[0] is sys.stdin:
 					message = input()
 					if message == "q":
+						disconnect = disconnectChat(packet)
+						s.send(disconnect.SerializeToString())
+						print("You have been disconnected!")
 						s.close()
 						break
 					elif message == "lp()":
@@ -129,6 +132,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 					if(packet.type == packet.CHAT):
 						chat.ParseFromString(data)
 						print("{}: {}".format(chat.player.name, chat.message))
+					elif(packet.type == packet.DISCONNECT):
+						disconnect = packet.DisconnectPacket()
+						disconnect.ParseFromString(data)
+						print("{} has disconnected!".format(disconnect.player.name))
 
 		# exit
 		elif choice == 3:
