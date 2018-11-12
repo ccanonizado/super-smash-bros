@@ -1,15 +1,32 @@
-import chat_pb2
+import player_pb2
+import tcp_packet_pb2
 import socket
 import select
 from threading import Thread
 
 thread = Thread()
-packet = chat_pb2.TcpPacket()
+packet = tcp_packet_pb2.TcpPacket()
 
 # server parameters
 HOST = '202.92.144.45'
 PORT = 80
 BUFFER = 1024
+
+def receiveChat(s):
+	data = s.recv(BUFFER)
+	if(data):
+		chat = packet.ChatPacket()
+		chat.type = packet.CHAT
+		packet.ParseFromString(data)
+		return packet
+	else:
+		return 0
+
+def sendAndReceive(packet, s):
+	s.send(packet.SerializeToString())
+	data = s.recv(BUFFER)
+	packet.ParseFromString(data)
+	return packet
 
 def printMenu():
 	print("[1] Host")
@@ -18,7 +35,7 @@ def printMenu():
 	print("Choice: ", end="")
 
 def createLobby(packet):
-	packet.type = chat_pb2.TcpPacket.CREATE_LOBBY
+	packet.type = packet.CREATE_LOBBY
 
 	lobby = packet.CreateLobbyPacket()
 	lobby.type = packet.type
@@ -28,7 +45,7 @@ def createLobby(packet):
 	return lobby
 
 def listPlayers(packet):
-	packet.type = chat_pb2.TcpPacket.PLAYER_LIST
+	packet.type = packet.PLAYER_LIST
 
 	players = packet.PlayerListPacket()
 	players.type = packet.type
@@ -36,7 +53,7 @@ def listPlayers(packet):
 	return players
 
 def connectToLobby(packet):
-	packet.type = chat_pb2.TcpPacket.CONNECT
+	packet.type = packet.CONNECT
 
 	connect = packet.ConnectPacket()
 	connect.type = packet.type
@@ -50,7 +67,7 @@ def connectToLobby(packet):
 	return connect
 
 def chatInLobby(packet, message):
-	packet.type = chat_pb2.TcpPacket.CHAT
+	packet.type = packet.CHAT
 
 	chat = packet.ChatPacket()
 	chat.type = packet.type
@@ -60,7 +77,12 @@ def chatInLobby(packet, message):
 	return chat
 
 def disconnectChat(packet):
-	packet.type = chat_pb2.TcpPacket.DISCONNECT
+	packet.type = packet.DISCONNECT
+
+	disconnect = packet.DisconnectPacket()
+	disconnect.type = packet.type
+
+	return disconnect
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 	s.connect((HOST, PORT))
@@ -73,11 +95,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		if choice == 1:
 			print()
 			lobby = createLobby(packet)
-
-			s.send(lobby.SerializeToString())
-			data = s.recv(BUFFER)
-
-			lobby.ParseFromString(data)
+			lobby = sendAndReceive(lobby, s)
 			lobby_id = lobby.lobby_id
 			print("Created lobby: {}".format(lobby_id))
 			print()
@@ -86,10 +104,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		elif choice == 2:
 			print()
 			connect = connectToLobby(packet)
-
-			s.send(connect.SerializeToString())
-			data = s.recv(BUFFER)
-
+			connect = sendAndReceive(connect, s)
 			print()
 			print("Welcome to Chat Lobby {}!".format(connect.lobby_id))
 			print("Type lp() to list active players. Enjoy!")
@@ -101,27 +116,22 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 				if message == "lp()":
 					players = listPlayers(packet)
-
-					s.send(players.SerializeToString())
-					data = s.recv(BUFFER)
-
-					players.ParseFromString(data)
+					players = sendAndReceive(players, s)
 					print("Current players: ", end="")
-					print(players.player_list)
+					for player in players.player_list:
+						print("{} ".format(player.name), end="")
+					print()
 
 				elif message == 'q':
+					disconnect = disconnectChat(packet)
+					disconnect = sendAndReceive(disconnect, s)
 					print("You have been disconnected.")
 					print()
 					break
 
 				else:
 					chat = chatInLobby(packet, message)
-
-					s.send(chat.SerializeToString())
-					data = s.recv(BUFFER)
-
-					chat.ParseFromString(data)
-
+					chat = sendAndReceive(chat, s)
 					print("{}: {}".format(chat.player.name, chat.message))
 
 		# exit

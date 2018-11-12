@@ -1,0 +1,75 @@
+syntax = "proto2";
+
+import "player.proto";
+
+message TcpPacket {
+  enum PacketType {
+    DISCONNECT = 0;
+    CONNECT = 1;
+    CREATE_LOBBY = 2;
+    CHAT = 3;
+    PLAYER_LIST = 4;
+    ERR_LDNE = 5;
+    ERR_LFULL= 6;
+    ERR = 7;
+  }
+
+  required PacketType type = 1;
+
+  message DisconnectPacket {
+    enum Update {
+      NORMAL = 0;
+      LOST = 1;
+    }
+
+    required PacketType type = 1;
+    optional Player player = 2;
+    optional DisconnectPacket.Update update = 3;
+  }
+
+  message ConnectPacket {
+    enum Update {
+      SELF = 0;
+      NEW = 1;
+    }
+
+    required PacketType type = 1;
+    required Player player = 2;
+    optional string lobby_id  = 3;
+    optional ConnectPacket.Update update = 4;
+  }
+
+  message CreateLobbyPacket {
+    required PacketType type = 1;
+    optional string lobby_id  = 2;
+    optional int32 max_players = 3;
+  }
+
+  message ChatPacket {
+    required PacketType type = 1;
+    required string message = 2;
+    optional Player player = 3;
+    optional string lobby_id  = 4;
+  }
+
+  message PlayerListPacket {
+    required PacketType type = 1;
+    repeated Player player_list = 3;
+  }
+
+  message ErrLdnePacket {
+    required PacketType type = 1;
+    optional string err_message = 2;
+  }
+
+  message ErrLfullPacket {
+    required PacketType type = 1;
+    optional string err_message = 2;
+  }
+
+  message ErrPacket {
+    required PacketType type = 1;
+    required string err_message = 2;
+  }
+
+}

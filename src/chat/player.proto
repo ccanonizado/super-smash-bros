@@ -1,0 +1,6 @@
+syntax = "proto2";
+
+message Player {
+  required string name = 1;
+  optional string id = 2;
+}
