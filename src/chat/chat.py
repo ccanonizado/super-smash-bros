@@ -75,8 +75,8 @@ def disconnectChat(packet):
 
 # connect sockets to server
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+	s.connect((HOST, PORT))
 	while(True):
-		s.connect((HOST, PORT))
 		printMenu()
 		choice = int(input())
 
@@ -112,7 +112,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 						s.send(disconnect.SerializeToString())
 						print("You have been disconnected!")
 						print()
-						s.close()
 						break
 					elif message == "lp()":
 						players = listPlayers(packet)
@@ -139,6 +138,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 		# exit
 		elif choice == 3:
+			s.close()
 			break
 
 		else:
