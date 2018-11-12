@@ -4,6 +4,7 @@ import select
 import sys
 
 packet = tcp_packet_pb2.TcpPacket()
+chatted = False
 
 # server parameters
 HOST = '202.92.144.45'
@@ -76,7 +77,7 @@ def disconnectChat(packet):
 # connect sockets to server
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 	s.connect((HOST, PORT))
-	while(True):
+	while(True and not chatted):
 		printMenu()
 		choice = int(input())
 
@@ -91,6 +92,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 		# chat
 		elif choice == 2:
+			chatted = True
 			print()
 			connect = connectToLobby(packet)
 			connect = sendAndReceive(connect, s)
@@ -111,7 +113,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 						disconnect = disconnectChat(packet)
 						s.send(disconnect.SerializeToString())
 						print("You have been disconnected!")
-						print()
+						s.close()
 						break
 					elif message == "lp()":
 						players = listPlayers(packet)
@@ -138,7 +140,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 		# exit
 		elif choice == 3:
-			s.close()
 			break
 
 		else:
