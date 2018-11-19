@@ -21,11 +21,11 @@ class Player(pygame.sprite.Sprite):
 
     def jump(self):
         
-        # self.rect.x += 1
-        # collison = pygame.sprite.spritecollide(self, self.game.platforms, False)
-        # self.rect.x -= 1
-        # if collision:
-            self.vel.y = -20
+        self.rect.x += 1
+        collision = pygame.sprite.spritecollide(self, self.game.platforms, False)
+        self.rect.x -= 1
+        if collision:
+            self.vel.y = -VEL
  
     def update(self):
 
@@ -41,9 +41,9 @@ class Player(pygame.sprite.Sprite):
         self.pos += self.vel + 0.5 * self.acc
 
         if self.pos.x > WIDTH:
-            self.pos.x = WIDTH - 15
+            self.pos.x = WIDTH - VEL
         if self.pos.x < 0:
-            self.pos.x = 15
+            self.pos.x = VEL
 
         self.rect.midbottom = self.pos
 

@@ -21,16 +21,16 @@ class Game:
         self.platforms = pygame.sprite.Group()
         self.player = Player(self)
         self.all_sprites.add(self. player)
-        base = Base(0, HEIGHT - 150, WIDTH , 70)
+        base = Base(0, HEIGHT - 30, WIDTH , 30)
         self.all_sprites.add(base)
         self.platforms.add(base)
-        plat1 = Base(70, 400, 200, 50)
+        plat1 = Base(60, 420, 200, 50)
         self.all_sprites.add(plat1)
         self.platforms.add(plat1)
-        plat2 = Base(530, 400, 200, 50)
+        plat2 = Base(435, 420, 200, 50)
         self.all_sprites.add(plat2)
         self.platforms.add(plat2)
-        plat3 = Base(300, 200, 200, 50)
+        plat3 = Base(250, 200, 200, 50)
         self.all_sprites.add(plat3)
         self.platforms.add(plat3)
         self.run() 
@@ -67,6 +67,15 @@ class Game:
             if collision:
                 self.player.pos.y = collision[0].rect.top + 1
                 self.player.vel.y = 0
+
+        # if self.player.rect.top < HEIGHT / 28:
+        #     self.player.pos.y += abs(self.player.vel.y)
+        #     for plat in self.platforms:
+        #         plat.rect.y += abs(self.player.vel.y / 8)
+        # if self.player.rect.top == HEIGHT / 28:
+        #     self.player.pos.y -= abs(self.player.vel.y)
+        #     for plat in self.platforms:
+        #         plat.rect.y -= abs(self.player.vel.y / 8)
 
     def draw(self):
         self.screen.fill(BLUE)

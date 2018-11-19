@@ -2,12 +2,13 @@ import random
 import os
 
 TITLE = "Test"
-WIDTH = 800
-HEIGHT = 800
-FPS = 25
+WIDTH = 700
+HEIGHT = 700
+FPS = 60
 
 ACC = 0.5
 FRIC = -0.12
+VEL = 15
 
 BLUE = (59,148,238)
 BLACK = (0,0,0)
