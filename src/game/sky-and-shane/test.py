@@ -68,15 +68,6 @@ class Game:
                 self.player.pos.y = collision[0].rect.top + 1
                 self.player.vel.y = 0
 
-        # if self.player.rect.top < HEIGHT / 28:
-        #     self.player.pos.y += abs(self.player.vel.y)
-        #     for plat in self.platforms:
-        #         plat.rect.y += abs(self.player.vel.y / 8)
-        # if self.player.rect.top == HEIGHT / 28:
-        #     self.player.pos.y -= abs(self.player.vel.y)
-        #     for plat in self.platforms:
-        #         plat.rect.y -= abs(self.player.vel.y / 8)
-
     def draw(self):
         self.screen.fill(BLUE)
         self.all_sprites.draw(self.screen)
