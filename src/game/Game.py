@@ -1,5 +1,6 @@
 from objects.Button import Button
 from settings import *
+from Chat import Chat
 import pygame as pg
 # from sprites import *
 
@@ -17,6 +18,9 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
         self.status = INTRO
+
+        # no lobby initially
+        self.lobby = 0
 
     def run(self):
         self.playing = True
@@ -41,7 +45,6 @@ class Game:
                 self.draw()
             
     def new(self):
-
         # sprite groups for later use
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
@@ -83,9 +86,7 @@ class Game:
                 pos = pg.mouse.get_pos()
 
                 if event.type == pg.QUIT:
-                    if self.playing:
-                        self.playing = False
-                    self.running = False
+                    quit()
                 
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if start.isOver(pos):
@@ -120,9 +121,7 @@ class Game:
                 pos = pg.mouse.get_pos()
 
                 if event.type == pg.QUIT:
-                    if self.playing:
-                        self.playing = False
-                    self.running = False
+                    quit()
                 
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if back.isOver(pos):
@@ -141,7 +140,8 @@ class Game:
         join = Button('join', 400, 400, 300, 100)
         back = Button('back', 20, 20, 100, 100)
         choice = 'none'
-        
+        error = 'none'
+
         font = pg.font.Font(None, 100)
         text = ''
 
@@ -150,7 +150,12 @@ class Game:
             if choice == 'none':
                 self.screen.blit(START1_BG, ORIGIN)
             elif choice == 'create':
-                self.screen.blit(START2A_BG, ORIGIN)
+                if error == 'invalid':
+                    self.screen.blit(START2A_FAIL_BG, ORIGIN)
+                elif error == 'none-success':
+                    self.screen.blit(START2A_SUCCESS_BG, ORIGIN)
+                elif error == 'none':
+                    self.screen.blit(START2A_BG, ORIGIN)
             elif choice == 'join':
                 self.screen.blit(START2B_BG, ORIGIN)
 
@@ -161,9 +166,7 @@ class Game:
                 pos = pg.mouse.get_pos()
 
                 if event.type == pg.QUIT:
-                    if self.playing:
-                        self.playing = False
-                    self.running = False
+                    quit()
                 
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if create.isOver(pos):
@@ -187,9 +190,19 @@ class Game:
 
                 if event.type == pg.KEYDOWN and (choice == 'create' or choice == 'join'):
                     if event.key == pg.K_RETURN:
-                        text = ''
-                        self.status = GAME
-                        break
+                        if choice == 'create':
+                            # count validation
+                            if error == 'none-success':
+                                self.status = GAME
+                                break
+                            elif text == '' or int(text) < 3 or int(text) > 6:
+                                error = 'invalid'
+                            else:
+                                error = 'none-success'
+                                chat = Chat()
+                                lobby = chat.createLobby(chat.packet, int(text))
+                                text = lobby.lobby_id
+                                self.lobby = lobby.lobby_id
                     elif event.key == pg.K_BACKSPACE:
                         text = text[:-1]
                     else:
@@ -216,7 +229,6 @@ game = Game()
 
 while game.running:
     game.new()
-    # game.gameover()
 
 pg.quit()
 

@@ -7,14 +7,14 @@ img_path = os.path.join(script_dir, 'images/buttons/')
 
 # reference for the button - https://www.youtube.com/watch?v=4_9twnEduFA
 
-class Button():
+class Button:
     def __init__(self, label, x, y, w, h):
         self.label = label
         self.x = x
         self.y = y
         self.w = w
         self.h = h
-        self.img = pg.image.load(img_path+label+'a.png') 
+        self.img = pg.image.load(img_path+label+'a.png')
 
     def isOver(self, pos):
         # pos is the mouse position or a tuple of (x,y) coordinates
