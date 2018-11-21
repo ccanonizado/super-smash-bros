@@ -5,7 +5,7 @@ import pygame as pg
 script_dir = sys.path[0]
 img_path = os.path.join(script_dir, 'images/buttons/')
 
-# reference for this - https://www.youtube.com/watch?v=4_9twnEduFA
+# reference for the button - https://www.youtube.com/watch?v=4_9twnEduFA
 
 class Button():
     def __init__(self, label, x, y, w, h):

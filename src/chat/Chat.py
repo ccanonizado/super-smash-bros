@@ -1,5 +1,3 @@
-# this is from milestone 1 - check Chat.py for integration with the game
-
 import tcp_packet_pb2
 import socket
 import select
