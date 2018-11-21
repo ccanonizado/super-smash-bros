@@ -5,8 +5,9 @@ CMSC 137 project made in Python and developed by:
 * Francheska Marie Pelaez Semilla
 * Shane Serrano
 
-*Current Progress: UI with Menu Navigation*
-**Next Goal: Chat Integration with UI**
+*Current Progress: Integrated Create Lobby in UI*
+|
+**Next Goal: Finish Chat Integration**
 
 ## Before Development
 

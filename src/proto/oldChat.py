@@ -146,3 +146,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 		else:
 			print("Invalid choice!")
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect((HOST, PORT))
