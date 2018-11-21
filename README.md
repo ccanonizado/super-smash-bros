@@ -6,7 +6,7 @@ CMSC 137 project made in Python and developed by:
 * Shane Serrano
 
 *Current Progress: UI with Menu Navigation*
-**Next: Chat Integration with UI*
+**Next Goal: Chat Integration with UI**
 
 ## Before Development
 
