@@ -5,6 +5,9 @@ CMSC 137 project made in Python and developed by:
 * Francheska Marie Pelaez Semilla
 * Shane Serrano
 
+*Current Progress: UI with Menu Navigation*
+**Next: Chat Integration with UI*
+
 ## Before Development
 
 1. Setup your SSH key by following this [tutorial](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/).
