@@ -11,14 +11,16 @@ Other classes used in this directory are:
 - settings.py for all the configurations needed
 
 For ease of navigation search the following labels:
-"IMPORTANT METHODS" - game updates
+"IMPORTANT METHODS" - game events and updates
 "SCREENS" - different game menus
 
 '''
 
 from objects.Button import Button
 from objects.Platform import Platform
+from characters.Player import Player
 from settings import *
+from images import *
 from Chat import Chat
 import pygame as pg
 # from sprites import *
@@ -35,7 +37,7 @@ class Game:
         # game variables
         self.screen = pg.display.set_mode(BG_SIZE)
         self.clock = pg.time.Clock()
-        self.status = INTRO
+        self.status = GAME
         self.running = True
 
         # no lobby initially
@@ -68,6 +70,9 @@ class Game:
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
 
+        self.player = Player(self)
+        self.all_sprites.add(self.player)
+
         base = Platform('floor', 0, HEIGHT-30, GAME_WIDTH, 30)
         self.all_sprites.add(base)
         self.platforms.add(base)
@@ -97,9 +102,18 @@ class Game:
                     self.playing = False
                 self.running = False
 
+            if keys[pg.K_UP]:
+                self.player.jump()
+
     def update(self):
         self.all_sprites.update()
+        if self.player.vel.y > 0:
+            collision = pg.sprite.spritecollide(self.player, self.platforms, False)
+            if collision:
+                self.player.pos.y = collision[0].rect.top + 1
+                self.player.vel.y = 0
 
+    # for consistently drawing the background and the sprites
     def draw(self):
         self.screen.blit(ARENA_BG, ORIGIN)
         self.screen.blit(CHAT_BG, (700,0))

@@ -1,19 +1,21 @@
-import pygame
-import random
 import os
+import sys
+import pygame as pg
+
+sys.path.append("..")
 from settings import *
 
-vec = pygame.math.Vector2
+vec = pg.math.Vector2
 
-class Player(pygame.sprite.Sprite):
+class Player(pg.sprite.Sprite):
     def __init__(self, game):
-        pygame.sprite.Sprite.__init__(self)
+        pg.sprite.Sprite.__init__(self)
 
         self.game = game
-        self.image = pygame.image.load(os.path.join(img_folder,"test"))
+        self.image = pg.image.load("./characters/mario/2.png")
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.pos = vec(WIDTH / 2, HEIGHT / 2)
+        self.rect.center = (GAME_WIDTH / 2, HEIGHT / 2)
+        self.pos = vec(GAME_WIDTH / 2, HEIGHT / 2)
         self.x = 0
         self.y = 0
         self.vel = vec(0,0)
@@ -22,7 +24,7 @@ class Player(pygame.sprite.Sprite):
     def jump(self):
         
         self.rect.x += 1
-        collision = pygame.sprite.spritecollide(self, self.game.platforms, False)
+        collision = pg.sprite.spritecollide(self, self.game.platforms, False)
         self.rect.x -= 1
         if collision:
             self.vel.y = -VEL
@@ -30,18 +32,18 @@ class Player(pygame.sprite.Sprite):
     def update(self):
 
         self.acc = vec(0 ,0.5)
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
+        keys = pg.key.get_pressed()
+        if keys[pg.K_LEFT]:
             self.acc.x = -ACC
-        if keys[pygame.K_RIGHT]:
+        if keys[pg.K_RIGHT]:
             self.acc.x = ACC
 
         self.acc.x += self.vel.x * FRIC
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
 
-        if self.pos.x > WIDTH:
-            self.pos.x = WIDTH - VEL
+        if self.pos.x > GAME_WIDTH:
+            self.pos.x = GAME_WIDTH - VEL
         if self.pos.x < 0:
             self.pos.x = VEL
 

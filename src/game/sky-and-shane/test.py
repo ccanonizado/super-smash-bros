@@ -20,7 +20,7 @@ class Game:
         self.all_sprites = pygame.sprite.Group()
         self.platforms = pygame.sprite.Group()
         self.player = Player(self)
-        self.all_sprites.add(self. player)
+        self.all_sprites.add(self.player)
         base = Base(0, HEIGHT - 30, WIDTH , 30)
         self.all_sprites.add(base)
         self.platforms.add(base)
