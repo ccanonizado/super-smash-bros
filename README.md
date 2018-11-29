@@ -9,6 +9,25 @@ CMSC 137 project made in Python and developed by:
 |
 **Next Goal: Finish Chat Integration**
 
+## Try our Game!
+
+Our game is *currently in development* but in order to run, clone or download this repository then **go to the /src/game/** directory. Once there, you may execute the program:
+
+```
+# if python 3 is not your default
+python3 Game.py
+# else
+python Game.py
+```
+
+Some dependencies you must have:
+* Pygame
+* Protobuf
+
+If you run it without errors, the game should pop up:
+
+![alt text](intro.png "Super Smash Bros")
+
 ## Before Development
 
 1. Setup your SSH key by following this [tutorial](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/).

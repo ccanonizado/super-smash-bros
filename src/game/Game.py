@@ -1,4 +1,23 @@
+'''
+
+This is the main game folder!
+
+All the other classes are distributed in the different directories:
+- /src/game/characters/ - Player.py and all other Character.pys
+- /src/game/objects/ - Base.py, Button.py, and Platform.py
+
+Other classes used in this directory are:
+- Chat.py for the multiplayer chat using TCP
+- settings.py for all the configurations needed
+
+For ease of navigation search the following labels:
+"IMPORTANT METHODS" - game updates
+"SCREENS" - different game menus
+
+'''
+
 from objects.Button import Button
+from objects.Platform import Platform
 from settings import *
 from Chat import Chat
 import pygame as pg
@@ -16,8 +35,8 @@ class Game:
         # game variables
         self.screen = pg.display.set_mode(BG_SIZE)
         self.clock = pg.time.Clock()
-        self.running = True
         self.status = INTRO
+        self.running = True
 
         # no lobby initially
         self.lobby = 0
@@ -48,7 +67,22 @@ class Game:
         # sprite groups for later use
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
-        # self.player = Player(self)
+
+        base = Platform('floor', 0, HEIGHT-30, GAME_WIDTH, 30)
+        self.all_sprites.add(base)
+        self.platforms.add(base)
+
+        plat1 = Platform('platform', 60, 420, 200, 50)
+        self.all_sprites.add(plat1)
+        self.platforms.add(plat1)
+
+        plat2 = Platform('platform', 435, 420, 200, 50)
+        self.all_sprites.add(plat2)
+        self.platforms.add(plat2)
+
+        plat3 = Platform('platform', 250, 200, 200, 50)
+        self.all_sprites.add(plat3)
+        self.platforms.add(plat3)
 
         self.run()
 
@@ -69,7 +103,7 @@ class Game:
     def draw(self):
         self.screen.blit(ARENA_BG, ORIGIN)
         self.screen.blit(CHAT_BG, (700,0))
-        # self.all_sprites.draw(self.screen)
+        self.all_sprites.draw(self.screen)
         pg.display.flip()
 
     # ========================= SCREENS =========================
@@ -104,9 +138,9 @@ class Game:
                     guide.isOver(pos)
                     about.isOver(pos)
 
-            self.screen.blit(start.img, (start.x, start.y))
-            self.screen.blit(guide.img, (guide.x, guide.y))
-            self.screen.blit(about.img, (about.x, about.y))
+            self.screen.blit(start.image, (start.x, start.y))
+            self.screen.blit(guide.image, (guide.x, guide.y))
+            self.screen.blit(about.image, (about.x, about.y))
 
             pg.display.flip()
 
@@ -131,7 +165,7 @@ class Game:
                 if event.type == pg.MOUSEMOTION:
                     back.isOver(pos)
 
-            self.screen.blit(back.img, (back.x, back.y))
+            self.screen.blit(back.image, (back.x, back.y))
 
             pg.display.flip()
 
@@ -180,6 +214,7 @@ class Game:
                             self.status = INTRO
                         elif choice == 'create' or choice == 'join':
                             choice = 'none'
+                            error = 'none'
                             text = ''
                         break
 
@@ -198,11 +233,13 @@ class Game:
                             elif text == '' or int(text) < 3 or int(text) > 6:
                                 error = 'invalid'
                             else:
+                                print('Trying to connect to lobby - please wait!')
                                 error = 'none-success'
                                 chat = Chat()
                                 lobby = chat.createLobby(chat.packet, int(text))
                                 text = lobby.lobby_id
                                 self.lobby = lobby.lobby_id
+                                print('Lobby created: {}'.format(self.lobby))
                     elif event.key == pg.K_BACKSPACE:
                         text = text[:-1]
                     else:
@@ -217,10 +254,10 @@ class Game:
                                 text += char
 
             if choice == 'none':
-                self.screen.blit(create.img, (create.x, create.y))
-                self.screen.blit(join.img, (join.x, join.y))
+                self.screen.blit(create.image, (create.x, create.y))
+                self.screen.blit(join.image, (join.x, join.y))
             
-            self.screen.blit(back.img, (back.x, back.y))
+            self.screen.blit(back.image, (back.x, back.y))
 
             pg.display.flip()
         
