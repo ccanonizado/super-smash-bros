@@ -40,6 +40,10 @@ class Game:
         self.status = GAME
         self.running = True
 
+        # converted backgrounds for optimized game loop
+        self.arena_bg = ARENA_BG.convert()
+        self.chat_bg = CHAT_BG.convert()
+
         # no lobby initially
         self.lobby = 0
 
@@ -66,28 +70,29 @@ class Game:
                 self.draw()
             
     def new(self):
-        # sprite groups for later use
-        self.all_sprites = pg.sprite.Group()
-        self.platforms = pg.sprite.Group()
+        if self.status == GAME:
+            # sprite groups for later use
+            self.all_sprites = pg.sprite.Group()
+            self.platforms = pg.sprite.Group()
 
-        self.player = Player(self)
-        self.all_sprites.add(self.player)
+            self.player = Player(self)
+            self.all_sprites.add(self.player)
 
-        base = Platform('floor', 0, HEIGHT-30, GAME_WIDTH, 30)
-        self.all_sprites.add(base)
-        self.platforms.add(base)
+            base = Platform('floor', 0, HEIGHT-30, GAME_WIDTH, 30)
+            self.all_sprites.add(base)
+            self.platforms.add(base)
 
-        plat1 = Platform('platform', 60, 420, 200, 50)
-        self.all_sprites.add(plat1)
-        self.platforms.add(plat1)
+            plat1 = Platform('platform', 60, 460, 200, 50)
+            self.all_sprites.add(plat1)
+            self.platforms.add(plat1)
 
-        plat2 = Platform('platform', 435, 420, 200, 50)
-        self.all_sprites.add(plat2)
-        self.platforms.add(plat2)
+            plat2 = Platform('platform', 435, 460, 200, 50)
+            self.all_sprites.add(plat2)
+            self.platforms.add(plat2)
 
-        plat3 = Platform('platform', 250, 200, 200, 50)
-        self.all_sprites.add(plat3)
-        self.platforms.add(plat3)
+            plat3 = Platform('platform', 250, 260, 200, 50)
+            self.all_sprites.add(plat3)
+            self.platforms.add(plat3)
 
         self.run()
 
@@ -107,6 +112,7 @@ class Game:
 
     def update(self):
         self.all_sprites.update()
+
         if self.player.vel.y > 0:
             collision = pg.sprite.spritecollide(self.player, self.platforms, False)
             if collision:
@@ -115,8 +121,8 @@ class Game:
 
     # for consistently drawing the background and the sprites
     def draw(self):
-        self.screen.blit(ARENA_BG, ORIGIN)
-        self.screen.blit(CHAT_BG, (700,0))
+        self.screen.blit(self.arena_bg, ORIGIN)
+        self.screen.blit(self.chat_bg, (700,0))
         self.all_sprites.draw(self.screen)
         pg.display.flip()
 

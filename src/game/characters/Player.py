@@ -4,6 +4,7 @@ import pygame as pg
 
 sys.path.append("..")
 from settings import *
+from images import MARIO
 
 vec = pg.math.Vector2
 
@@ -12,7 +13,7 @@ class Player(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
 
         self.game = game
-        self.image = pg.image.load("./characters/mario/2.png")
+        self.image = MARIO
         self.rect = self.image.get_rect()
         self.rect.center = (GAME_WIDTH / 2, HEIGHT / 2)
         self.pos = vec(GAME_WIDTH / 2, HEIGHT / 2)

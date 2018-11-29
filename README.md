@@ -5,10 +5,6 @@ CMSC 137 project made in Python and developed by:
 * Francheska Marie Pelaez Semilla
 * Shane Serrano
 
-*Current Progress: Integrated Create Lobby in UI*
-|
-**Next Goal: Finish Chat Integration**
-
 ## Try our Game!
 
 Our game is *currently in development* but in order to run, clone or download this repository then **go to the /src/game/** directory. Once there, you may execute the program:

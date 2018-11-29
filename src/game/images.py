@@ -27,3 +27,6 @@ START2B_LOBBY_BG = pg.image.load('./images/backgrounds/start2bLobby.png')
 START2B_NAME_BG = pg.image.load('./images/backgrounds/start2bName.png')
 START2B_NO_NAME_BG = pg.image.load('./images/backgrounds/start2bNoName.png')
 START2B_FULL_BG = pg.image.load('./images/backgrounds/start2bFull.png')
+
+# characters
+MARIO = pg.image.load('./characters/mario/2.png')
