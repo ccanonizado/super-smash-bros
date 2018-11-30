@@ -46,31 +46,33 @@ class Player(pg.sprite.Sprite):
         self.acc = vec(0 ,0.5)
         keys = pg.key.get_pressed()
 
-        if self.walkCount+1 >= 24:
-            self.walkCount = 0 
+        # block any movement if prayer pressed 'Enter' to chat
+        if not self.game.chatting:
+            if self.walkCount+1 >= 24:
+                self.walkCount = 0 
 
-        if keys[pg.K_UP]:
-            self.jump()
-            self.walkCount = 0
+            if keys[pg.K_UP]:
+                self.jump()
+                self.walkCount = 0
 
-        if keys[pg.K_LEFT]:
-            self.acc.x = -ACC
-            self.walkCount += 1
-            self.direction = LEFT
-            self.image = walkL[self.walkCount//3]
+            if keys[pg.K_LEFT]:
+                self.acc.x = -ACC
+                self.walkCount += 1
+                self.direction = LEFT
+                self.image = walkL[self.walkCount//3]
 
-        elif keys[pg.K_RIGHT]:
-            self.acc.x = ACC
-            self.walkCount += 1
-            self.direction = RIGHT
-            self.image = walkR[self.walkCount//3]
+            elif keys[pg.K_RIGHT]:
+                self.acc.x = ACC
+                self.walkCount += 1
+                self.direction = RIGHT
+                self.image = walkR[self.walkCount//3]
 
-        else:
-            if self.direction == RIGHT:
-                self.image = standR
-            elif self.direction == LEFT: 
-                self.image = standL
-            self.walkCount = 0 
+            else:
+                if self.direction == RIGHT:
+                    self.image = standR
+                elif self.direction == LEFT: 
+                    self.image = standL
+                self.walkCount = 0 
 
         self.acc.x += self.vel.x * FRIC
         self.vel += self.acc

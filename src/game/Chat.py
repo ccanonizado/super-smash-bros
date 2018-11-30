@@ -7,6 +7,7 @@ script_dir = script_dir[:-4]
 chat_path = os.path.join(script_dir, 'proto/')
 sys.path.insert(0, chat_path)
 
+from threading import Thread
 import tcp_packet_pb2
 import socket
 import select
@@ -20,7 +21,8 @@ PORT = 80
 BUFFER = 1024
 
 class Chat:
-	def __init__(self):
+	def __init__(self, game):
+		self.game = game
 		self.packet = packet
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.s.connect((HOST,PORT))
@@ -76,41 +78,20 @@ class Chat:
 					# 		print("{} has disconnected!".format(disconnect.player.name))
 
 
-	# def chatFlow(self):
-	# 	while(True):
-	# 		r, w, x = select.select([0, self.s], [], [])
-	# 		if not r:
-	# 			continue
-	# 		if r[0] == 0:
-	# 			message = input()
-	# 			if message == "q":
-	# 				disconnect = disconnectChat(packet)
-	# 				s.send(disconnect.SerializeToString())
-	# 				print("You have been disconnected!")
-	# 				s.close()
-	# 				break
-	# 			elif message == "lp()":
-	# 				players = listPlayers(packet)
-	# 				players = sendAndReceive(players, s)
-	# 				print("Current players: ", end="")
-	# 				for player in players.player_list:
-	# 					print("{} ".format(player.name), end="")
-	# 				print()
-	# 		else:
-	# 			chat = chatInLobby(packet, message)
-	# 			s.send(chat.SerializeToString())
-	# 			sys.stdout.flush()
-	# 			else:
-	# 				chat = packet.ChatPacket()
-	# 				data = s.recv(BUFFER)
-	# 				packet.ParseFromString(data)
-	# 				if(packet.type == packet.CHAT):
-	# 					chat.ParseFromString(data)
-	# 					print("{}: {}".format(chat.player.name, chat.message))
-	# 				elif(packet.type == packet.DISCONNECT):
-	# 					disconnect = packet.DisconnectPacket()
-	# 					disconnect.ParseFromString(data)
-	# 					print("{} has disconnected!".format(disconnect.player.name))
+	def startChat(self):
+		while(True):
+			chat = self.packet.ChatPacket()
+			data = self.s.recv(BUFFER)
+			self.packet.ParseFromString(data)
+			if(self.packet.type == self.packet.CHAT):
+				chat.ParseFromString(data)
+				self.game.chat_messages.append('{}: {}'.format(chat.player.name, chat.message))
+				# print("{}: {}".format(chat.player.name, chat.message))
+			elif(self.packet.type == self.packet.DISCONNECT):
+				disconnect = self.packet.DisconnectPacket()
+				disconnect.ParseFromString(data)
+				self.game.chat_messages.append('{} has disconnected!'.format(disconnect.player.name))
+				print("{} has disconnected!".format(disconnect.player.name))
 
 	# for moularization
 	def sendAndReceive(self, packet):
@@ -119,55 +100,44 @@ class Chat:
 		packet.ParseFromString(data)
 		return packet
 
-	def createLobby(self, packet, number):
-		packet.type = packet.CREATE_LOBBY
+	def createLobby(self, number):
+		lobby = self.packet.CreateLobbyPacket()
+		lobby.type = self.packet.CREATE_LOBBY
 
-		lobby = packet.CreateLobbyPacket()
-		lobby.type = packet.type
 		lobby.max_players = number
 
 		lobby = self.sendAndReceive(lobby)
 		return lobby
 
-	def listPlayers(self, packet):
-		packet.type = packet.PLAYER_LIST
+	def connectToLobby(self, lobby_id, name):
+		connect = self.packet.ConnectPacket()
+		connect.type = self.packet.CONNECT
 
-		players = packet.PlayerListPacket()
-		players.type = packet.type
+		connect.lobby_id = lobby_id
+		connect.player.name = name
+
+		connect = self.sendAndReceive(connect)
+
+		Thread(target=self.startChat).start()
+
+	def listPlayers(self):
+		players = self.packet.PlayerListPacket()
+		players.type = self.packet.PLAYER_LIST
 
 		players = self.sendAndReceive(players)
 		return players
 
-	def connectToLobby(self, packet):
-		packet.type = packet.CONNECT
-
-		connect = packet.ConnectPacket()
-		connect.type = packet.type
-
-		print("Enter lobby id: ", end="")
-		connect.lobby_id = input()
-
-		print("Enter your name: ", end="")
-		connect.player.name = input()
-
-		return connect
-
-	# CHANGE EVERYTHING DOWWWWNNNNNNNNNNNNNNNNNNNNNNNNNNNN
-	def chatInLobby(self, packet, message):
-		packet.type = packet.CHAT
-
-		chat = packet.ChatPacket()
-		chat.type = packet.type
+	def chatInLobby(self, message):
+		chat = self.packet.ChatPacket()
+		chat.type = self.packet.CHAT
 
 		chat.message = message
 
-		return chat
+		self.s.send(chat.SerializeToString())
 
-	def disconnectChat(self, packet):
-		packet.type = packet.DISCONNECT
-
-		disconnect = packet.DisconnectPacket()
-		disconnect.type = packet.type
+	def disconnectChat(self):
+		disconnect = self.packet.DisconnectPacket()
+		disconnect.type = self.packet.type.DISCONNECT
 
 		return disconnect
 

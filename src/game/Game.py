@@ -25,6 +25,7 @@ from Chat import Chat
 import pygame as pg
 # from sprites import *
 
+
 class Game:
     # ========================= IMPORTANT METHODS =========================
     def __init__(self):
@@ -37,15 +38,18 @@ class Game:
         # game variables
         self.screen = pg.display.set_mode(BG_SIZE)
         self.clock = pg.time.Clock()
-        self.status = GAME
+        self.status = INTRO
         self.running = True
 
         # converted backgrounds for optimized game loop
         self.arena_bg = ARENA_BG.convert()
         self.chat_bg = CHAT_BG.convert()
 
-        # no lobby initially
-        self.lobby = 0
+        self.chat_text = ''
+        self.chatting = False
+        self.chat_once = False
+        self.chat_init = False
+        self.chat_messages = []
 
     def run(self):
         self.playing = True
@@ -99,12 +103,44 @@ class Game:
     def events(self):
         keys = pg.key.get_pressed()
 
+        if not self.chat_init:
+            self.chat_text = '<Enter> disables movement!'
+            self.chat_init = True
+
         for event in pg.event.get():
             # check for closing window
             if event.type == pg.QUIT:
                 if self.playing:
                     self.playing = False
                 self.running = False
+
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_RETURN:
+                    if not self.chatting:
+                        self.chatting = True
+                        self.chat_once = True
+                        self.chat_text = 'Type here!'
+
+                    elif self.chatting:
+                        self.chatting = False
+                        self.chat.chatInLobby(self.chat_text)
+                        self.chat_text = '<Enter> disables movement!'
+
+                elif event.key == pg.K_BACKSPACE:
+                    if self.chatting:
+                        if self.chat_once:
+                            self.chat_once = False
+                            self.chat_text = ''
+                        else:
+                            self.chat_text = self.chat_text[:-1]
+                else:
+                    if self.chatting:
+                        if self.chat_once:
+                            self.chat_once = False
+                            self.chat_text = ''
+                        if len(self.chat_text) <= 22:
+                            char = event.unicode
+                            self.chat_text += char
 
     def update(self):
         self.all_sprites.update()
@@ -120,6 +156,18 @@ class Game:
         self.screen.blit(self.arena_bg, ORIGIN)
         self.screen.blit(self.chat_bg, (700,0))
         self.all_sprites.draw(self.screen)
+
+        # showing the chat
+        font = pg.font.Font(None, 30)
+        text_surface = font.render(self.chat_text, True, WHITE)
+        self.screen.blit(text_surface, (760,644))
+
+        # print all the messages
+        font2 = pg.font.Font(None, 24)
+        for i in range(0,len(self.chat_messages)):
+            text_surface2 = font2.render(self.chat_messages[i], True, BLACK)
+            self.screen.blit(text_surface2, (730,95+(i*25)))
+
         pg.display.flip()
 
     # ========================= SCREENS =========================
@@ -249,13 +297,15 @@ class Game:
                             elif text == '' or int(text) < 3 or int(text) > 6:
                                 error = 'invalid'
                             else:
+                                # after lobby is created it connects to it
                                 print('Trying to connect to lobby - please wait!')
                                 error = 'none-success'
-                                chat = Chat()
-                                lobby = chat.createLobby(chat.packet, int(text))
+                                self.chat = Chat(self)
+                                lobby = self.chat.createLobby(int(text))
                                 text = lobby.lobby_id
                                 self.lobby = lobby.lobby_id
                                 print('Lobby created: {}'.format(self.lobby))
+                                self.chat.connectToLobby(self.lobby, 'Cholo')
                     elif event.key == pg.K_BACKSPACE:
                         text = text[:-1]
                     else:
