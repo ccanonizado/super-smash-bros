@@ -70,29 +70,28 @@ class Game:
                 self.draw()
             
     def new(self):
-        if self.status == GAME:
-            # sprite groups for later use
-            self.all_sprites = pg.sprite.Group()
-            self.platforms = pg.sprite.Group()
+        # sprite groups for later use
+        self.all_sprites = pg.sprite.Group()
+        self.platforms = pg.sprite.Group()
 
-            self.player = Player(self)
-            self.all_sprites.add(self.player)
+        self.player = Player(self, [100,0])
+        self.all_sprites.add(self.player)
 
-            base = Platform('floor', 0, HEIGHT-30, GAME_WIDTH, 30)
-            self.all_sprites.add(base)
-            self.platforms.add(base)
+        base = Platform('floor', 0, HEIGHT-30, GAME_WIDTH, 30)
+        self.all_sprites.add(base)
+        self.platforms.add(base)
 
-            plat1 = Platform('platform', 60, 460, 200, 50)
-            self.all_sprites.add(plat1)
-            self.platforms.add(plat1)
+        plat1 = Platform('platform', 60, 460, 200, 50)
+        self.all_sprites.add(plat1)
+        self.platforms.add(plat1)
 
-            plat2 = Platform('platform', 435, 460, 200, 50)
-            self.all_sprites.add(plat2)
-            self.platforms.add(plat2)
+        plat2 = Platform('platform', 435, 460, 200, 50)
+        self.all_sprites.add(plat2)
+        self.platforms.add(plat2)
 
-            plat3 = Platform('platform', 250, 260, 200, 50)
-            self.all_sprites.add(plat3)
-            self.platforms.add(plat3)
+        plat3 = Platform('platform', 250, 260, 200, 50)
+        self.all_sprites.add(plat3)
+        self.platforms.add(plat3)
 
         self.run()
 
@@ -106,9 +105,6 @@ class Game:
                 if self.playing:
                     self.playing = False
                 self.running = False
-
-            if keys[pg.K_UP]:
-                self.player.jump()
 
     def update(self):
         self.all_sprites.update()

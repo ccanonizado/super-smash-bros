@@ -7,7 +7,7 @@ CMSC 137 project made in Python and developed by:
 
 ## Try our Game!
 
-Our game is *currently in development* but in order to run, clone or download this repository then **go to the /src/game/** directory. Once there, you may execute the program:
+Our Super Smash Bros is *currently in development* but in order to run, clone or download this repository then **go to the /src/game/** directory. Once there, you may execute the program:
 
 ```
 # if python 3 is not your default

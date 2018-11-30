@@ -4,23 +4,34 @@ import pygame as pg
 
 sys.path.append("..")
 from settings import *
-from images import MARIO
+from images import *
 
 vec = pg.math.Vector2
 
+walkR = [maS1, maM1, maM2, maM3, maM4, maM5, maM6, maM7]
+walkL = [pg.transform.flip(image, True, False) for image in walkR]
+standR = maS1
+standL = pg.transform.flip(standR, True, False)
+
+LEFT = 'left'
+RIGHT = 'right'
+
 class Player(pg.sprite.Sprite):
-    def __init__(self, game):
+    def __init__(self, game, pos):
         pg.sprite.Sprite.__init__(self)
 
         self.game = game
-        self.image = MARIO
+        self.image = maS1
         self.rect = self.image.get_rect()
         self.rect.center = (GAME_WIDTH / 2, HEIGHT / 2)
-        self.pos = vec(GAME_WIDTH / 2, HEIGHT / 2)
-        self.x = 0
-        self.y = 0
+        self.pos = pos
+        self.w = self.image.get_size()[0]
+        self.h = self.image.get_size()[1]
         self.vel = vec(0,0)
         self.acc = vec(0,0)
+
+        self.walkCount = 0
+        self.direction = RIGHT
 
     def jump(self):
         
@@ -34,10 +45,32 @@ class Player(pg.sprite.Sprite):
 
         self.acc = vec(0 ,0.5)
         keys = pg.key.get_pressed()
+
+        if self.walkCount+1 >= 24:
+            self.walkCount = 0 
+
+        if keys[pg.K_UP]:
+            self.jump()
+            self.walkCount = 0
+
         if keys[pg.K_LEFT]:
             self.acc.x = -ACC
-        if keys[pg.K_RIGHT]:
+            self.walkCount += 1
+            self.direction = LEFT
+            self.image = walkL[self.walkCount//3]
+
+        elif keys[pg.K_RIGHT]:
             self.acc.x = ACC
+            self.walkCount += 1
+            self.direction = RIGHT
+            self.image = walkR[self.walkCount//3]
+
+        else:
+            if self.direction == RIGHT:
+                self.image = standR
+            elif self.direction == LEFT: 
+                self.image = standL
+            self.walkCount = 0 
 
         self.acc.x += self.vel.x * FRIC
         self.vel += self.acc
