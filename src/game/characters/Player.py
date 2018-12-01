@@ -2,6 +2,7 @@ import os
 import sys
 import pygame as pg
 
+# move up one directory to be able to import the settings and images
 sys.path.append("..")
 from settings import *
 from images import *
@@ -34,7 +35,6 @@ class Player(pg.sprite.Sprite):
         self.direction = RIGHT
 
     def jump(self):
-        
         self.rect.x += 1
         collision = pg.sprite.spritecollide(self, self.game.platforms, False)
         self.rect.x -= 1
@@ -42,11 +42,10 @@ class Player(pg.sprite.Sprite):
             self.vel.y = -VEL
  
     def update(self):
-
         self.acc = vec(0 ,0.5)
         keys = pg.key.get_pressed()
 
-        # block any movement if prayer pressed 'Enter' to chat
+        # block any movement if player pressed 'Enter' to chat
         if not self.game.chatting:
             if self.walkCount+1 >= 24:
                 self.walkCount = 0 

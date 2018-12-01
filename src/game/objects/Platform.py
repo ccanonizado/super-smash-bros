@@ -2,6 +2,7 @@ import os
 import sys
 import pygame as pg
 
+# add the path to the folder with the other images
 script_dir = sys.path[0]
 img_path = os.path.join(script_dir, 'images/others/')
 

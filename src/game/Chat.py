@@ -1,7 +1,7 @@
 import os
 import sys
 
-# for adding the path to the folder with the protobuf files
+# add the path to the folder with the protobuf files
 script_dir = sys.path[0]
 script_dir = script_dir[:-4]
 chat_path = os.path.join(script_dir, 'proto/')
@@ -12,8 +12,8 @@ import tcp_packet_pb2
 import socket
 import select
 
+# create main TcpPacket
 packet = tcp_packet_pb2.TcpPacket()
-chatted = False
 
 # server parameters
 HOST = '202.92.144.45'
@@ -22,76 +22,34 @@ BUFFER = 1024
 
 class Chat:
 	def __init__(self, game):
-		self.game = game
+		self.g = game
 		self.packet = packet
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		# connect to server
 		self.s.connect((HOST,PORT))
 
-		# connect socket to server
-		# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-		# 	self.s = s.connect((HOST, PORT))
-			# while(True and not chatted):
-			# 	chatted = True
-			# 	print()
-			# 	connect = connectToLobby(packet)
-			# 	connect = sendAndReceive(connect, s)
-			# 	print()
-			# 	print("Welcome to Chat Lobby {}!".format(connect.lobby_id))
-			# 	print("Type lp() to list active players. Enjoy!")
-			# 	print()
-
-			# 	sys.stdout.write("Enter message (q to quit): \n")
-			# 	sys.stdout.flush()
-			# 	while(True):
-			# 		r, w, x = select.select([sys.stdin, s], [], [])
-			# 		if not r:
-			# 			continue
-			# 		if r[0] is sys.stdin:
-			# 			message = input()
-			# 			if message == "q":
-			# 				disconnect = disconnectChat(packet)
-			# 				s.send(disconnect.SerializeToString())
-			# 				print("You have been disconnected!")
-			# 				s.close()
-			# 				break
-			# 			elif message == "lp()":
-			# 				players = listPlayers(packet)
-			# 				players = sendAndReceive(players, s)
-			# 				print("Current players: ", end="")
-			# 				for player in players.player_list:
-			# 					print("{} ".format(player.name), end="")
-			# 				print()
-			# 			else:
-			# 				chat = chatInLobby(packet, message)
-			# 				s.send(chat.SerializeToString())
-			# 				sys.stdout.flush()
-					# else:
-					# 	chat = packet.ChatPacket()
-					# 	data = s.recv(BUFFER)
-					# 	packet.ParseFromString(data)
-					# 	if(packet.type == packet.CHAT):
-					# 		chat.ParseFromString(data)
-					# 		print("{}: {}".format(chat.player.name, chat.message))
-					# 	elif(packet.type == packet.DISCONNECT):
-					# 		disconnect = packet.DisconnectPacket()
-					# 		disconnect.ParseFromString(data)
-					# 		print("{} has disconnected!".format(disconnect.player.name))
-
-
-	def startChat(self):
+	# to be executed in a thread after connectToLobby
+	def receiveMessages(self):
 		while(True):
 			chat = self.packet.ChatPacket()
 			data = self.s.recv(BUFFER)
 			self.packet.ParseFromString(data)
+
+			# there is a threshold of 20 messages for the GUI
 			if(self.packet.type == self.packet.CHAT):
 				chat.ParseFromString(data)
-				self.game.chat_messages.append('{}: {}'.format(chat.player.name, chat.message))
-				# print("{}: {}".format(chat.player.name, chat.message))
+				if(len(self.g.chat_messages) == 20):
+					self.g.chat_messages.pop(0)
+				self.g.chat_messages.append('{}: {}'.format(chat.player.name, chat.message))
+			
+			# self.g.chat_messages -> list from Game.py
 			elif(self.packet.type == self.packet.DISCONNECT):
 				disconnect = self.packet.DisconnectPacket()
 				disconnect.ParseFromString(data)
-				self.game.chat_messages.append('{} has disconnected!'.format(disconnect.player.name))
-				print("{} has disconnected!".format(disconnect.player.name))
+				if(len(self.g.chat_messages) == 20):
+					self.g.chat_messages.pop(0)
+				self.g.chat_messages.append('{} has disconnected!'.format(disconnect.player.name))
 
 	# for moularization
 	def sendAndReceive(self, packet):
@@ -99,6 +57,18 @@ class Chat:
 		data = self.s.recv(BUFFER)
 		packet.ParseFromString(data)
 		return packet
+
+
+	'''
+
+	Format of methods from here:
+	<instantation of packet and adding type>
+	<SPACE>
+	<adding of parameters>
+	<SPACE>
+	<sending and returning of packet if ever>
+
+	'''
 
 	def createLobby(self, number):
 		lobby = self.packet.CreateLobbyPacket()
@@ -118,11 +88,14 @@ class Chat:
 
 		connect = self.sendAndReceive(connect)
 
-		Thread(target=self.startChat).start()
+		# run the thread for getting chat messages
+		Thread(target=self.receiveMessages).start()
 
 	def listPlayers(self):
 		players = self.packet.PlayerListPacket()
 		players.type = self.packet.PLAYER_LIST
+
+		# no parameters
 
 		players = self.sendAndReceive(players)
 		return players
@@ -139,5 +112,7 @@ class Chat:
 		disconnect = self.packet.DisconnectPacket()
 		disconnect.type = self.packet.type.DISCONNECT
 
-		return disconnect
+		# no parameters
+
+		self.sendAndReceive(disconnect)
 

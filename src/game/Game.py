@@ -1,6 +1,6 @@
 '''
 
-This is the main game folder!
+This is the main game file!
 
 All the other classes are distributed in the different directories:
 - /src/game/characters/ - Player.py and all other Character.pys
@@ -17,14 +17,14 @@ For ease of navigation search the following labels:
 '''
 
 from objects.Button import Button
+from objects.CharButton import CharButton
+from objects.ReadyButton import ReadyButton
 from objects.Platform import Platform
 from characters.Player import Player
 from settings import *
 from images import *
 from Chat import Chat
 import pygame as pg
-# from sprites import *
-
 
 class Game:
     # ========================= IMPORTANT METHODS =========================
@@ -45,6 +45,7 @@ class Game:
         self.arena_bg = ARENA_BG.convert()
         self.chat_bg = CHAT_BG.convert()
 
+        # chat variables
         self.chat_text = ''
         self.chatting = False
         self.chat_once = False
@@ -103,6 +104,7 @@ class Game:
     def events(self):
         keys = pg.key.get_pressed()
 
+        # once player enters game screen - show initial chat
         if not self.chat_init:
             self.chat_text = '<Enter> disables movement!'
             self.chat_init = True
@@ -114,19 +116,26 @@ class Game:
                     self.playing = False
                 self.running = False
 
+            # majority of chat flow
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_RETURN:
                     if not self.chatting:
                         self.chatting = True
+
+                        # first enter will replace default text
                         self.chat_once = True
                         self.chat_text = 'Type here!'
 
                     elif self.chatting:
                         self.chatting = False
+
+                        # send message to server and replace with default text
                         self.chat.chatInLobby(self.chat_text)
                         self.chat_text = '<Enter> disables movement!'
 
                 elif event.key == pg.K_BACKSPACE:
+                   
+                    # self.chat_once just clears 'Type here!' after initial type
                     if self.chatting:
                         if self.chat_once:
                             self.chat_once = False
@@ -138,6 +147,8 @@ class Game:
                         if self.chat_once:
                             self.chat_once = False
                             self.chat_text = ''
+                        
+                        # maximum message length is 22 to fit the screen
                         if len(self.chat_text) <= 22:
                             char = event.unicode
                             self.chat_text += char
@@ -157,12 +168,12 @@ class Game:
         self.screen.blit(self.chat_bg, (700,0))
         self.all_sprites.draw(self.screen)
 
-        # showing the chat
+        # show the input chat
         font = pg.font.Font(None, 30)
         text_surface = font.render(self.chat_text, True, WHITE)
         self.screen.blit(text_surface, (760,644))
 
-        # print all the messages
+        # show all the messages
         font2 = pg.font.Font(None, 24)
         for i in range(0,len(self.chat_messages)):
             text_surface2 = font2.render(self.chat_messages[i], True, BLACK)
@@ -233,32 +244,39 @@ class Game:
 
             pg.display.flip()
 
+    # this menu includes the name input - character select - ready screen
     def start_menu(self):
-        create = Button('create', 400, 275, 300, 100)
-        join = Button('join', 400, 400, 300, 100)
         back = Button('back', 20, 20, 100, 100)
-        choice = 'none'
-        error = 'none'
+        ready = ReadyButton('ready', 400, 560, 300, 100)
+        mario = CharButton('mario', 25, 210, 150, 350)
+        luigi = CharButton('luigi', 210, 210, 150, 350)
+        yoshi = CharButton('yoshi', 390, 210, 150, 350)
+        popo = CharButton('popo', 575, 210, 150, 350)
+        nana = CharButton('nana', 750, 210, 150, 350)
+        link = CharButton('link', 920, 210, 150, 350)
 
         font = pg.font.Font(None, 100)
+        character = 10
+        screen = 'name'
+        players = 0
         text = ''
 
         while self.status == START:
+            if screen == 'name':
+                self.screen.blit(START_NAME_BG, ORIGIN)
+            elif screen == 'no_name':
+                self.screen.blit(START_NO_NAME_BG, ORIGIN)
+            elif screen == 'character':
+                self.screen.blit(START_CHARACTER_BG, ORIGIN)
+            elif screen == 'waiting':
+                self.screen.blit(START_WAITING_BG, ORIGIN)
 
-            if choice == 'none':
-                self.screen.blit(START1_BG, ORIGIN)
-            elif choice == 'create':
-                if error == 'invalid':
-                    self.screen.blit(START2A_FAIL_BG, ORIGIN)
-                elif error == 'none-success':
-                    self.screen.blit(START2A_SUCCESS_BG, ORIGIN)
-                elif error == 'none':
-                    self.screen.blit(START2A_BG, ORIGIN)
-            elif choice == 'join':
-                self.screen.blit(START2B_BG, ORIGIN)
-
-            text_surface = font.render(text, True, WHITE)
-            self.screen.blit(text_surface, (355,355))
+            if screen == 'name' or screen == 'no_name':
+                text_surface = font.render(text, True, WHITE)
+                self.screen.blit(text_surface, (355,355))
+            elif screen == 'waiting':
+                text_surface = font.render(str(players), True, WHITE)
+                self.screen.blit(text_surface,(700,440))
             
             for event in pg.event.get():
                 pos = pg.mouse.get_pos()
@@ -267,62 +285,82 @@ class Game:
                     quit()
                 
                 if event.type == pg.MOUSEBUTTONDOWN:
-                    if create.isOver(pos):
-                        choice = 'create'
-                        break
-                    elif join.isOver(pos):
-                        choice = 'join'
-                        break
-                    elif back.isOver(pos):
-                        if choice == 'none':
+                    if back.isOver(pos):
+                        if screen == 'name':
                             self.status = INTRO
-                        elif choice == 'create' or choice == 'join':
-                            choice = 'none'
-                            error = 'none'
-                            text = ''
-                        break
+                            break
+                        elif screen == 'no_name':
+                            self.status = INTRO
+                            break
+                        elif screen == 'character':
+                            screen = 'name'
+                        elif screen == 'waiting':
+                            screen = 'character'
+                    if screen == 'character':
+                        if mario.isOver(pos, 'mario'):
+                            character = MARIO
+                            screen = 'waiting'
+                        elif luigi.isOver(pos, 'luigi'):
+                            character = LUIGI
+                            screen = 'waiting'
+                        elif yoshi.isOver(pos, 'yoshi'):
+                            character = YOSHI
+                            screen = 'waiting'
+                        elif popo.isOver(pos, 'popo'):
+                            character = POPO
+                            screen = 'waiting'
+                        elif nana.isOver(pos, 'nana'):
+                            character = NANA
+                            screen = 'waiting'
+                        elif link.isOver(pos, 'link'):
+                            character = LINK
+                            screen = 'waiting'
+                    if screen == 'waiting':
+                        if ready.isOver(pos):
+                            if ready.clicked:
+                                players -= 1
+                                ready.click()
+                            else:
+                                players += 1
+                                ready.click()
 
                 if event.type == pg.MOUSEMOTION:
-                    create.isOver(pos)
-                    join.isOver(pos)
                     back.isOver(pos)
+                    if screen == 'character':
+                        mario.isOver(pos, 'mario')
+                        luigi.isOver(pos, 'luigi')
+                        yoshi.isOver(pos, 'yoshi')
+                        popo.isOver(pos, 'popo')
+                        nana.isOver(pos, 'nana')
+                        link.isOver(pos, 'link')
+                    if screen == 'waiting':
+                        ready.isOver(pos)
 
-                if event.type == pg.KEYDOWN and (choice == 'create' or choice == 'join'):
-                    if event.key == pg.K_RETURN:
-                        if choice == 'create':
-                            # count validation
-                            if error == 'none-success':
-                                self.status = GAME
-                                break
-                            elif text == '' or int(text) < 3 or int(text) > 6:
-                                error = 'invalid'
+                if event.type == pg.KEYDOWN:
+                    if screen == 'name' or screen == 'no_name':
+                        if event.key == pg.K_RETURN:
+                            if len(text) == 0:
+                                screen = 'no_name'
                             else:
-                                # after lobby is created it connects to it
-                                print('Trying to connect to lobby - please wait!')
-                                error = 'none-success'
-                                self.chat = Chat(self)
-                                lobby = self.chat.createLobby(int(text))
-                                text = lobby.lobby_id
-                                self.lobby = lobby.lobby_id
-                                print('Lobby created: {}'.format(self.lobby))
-                                self.chat.connectToLobby(self.lobby, 'Cholo')
-                    elif event.key == pg.K_BACKSPACE:
-                        text = text[:-1]
-                    else:
-                        # limit character length for the screen
-                        if len(text) < 10:
-                            char = event.unicode
-                            # validation - max players should be a number only
-                            if choice == 'create':
-                                if char.isdigit():
-                                    text += char
-                            else:
+                                screen = 'character'
+                        elif event.key == pg.K_BACKSPACE:
+                            text = text[:-1]
+                        else:
+                            # limit character length for the screen
+                            if len(text) < 10:
+                                char = event.unicode
                                 text += char
-
-            if choice == 'none':
-                self.screen.blit(create.image, (create.x, create.y))
-                self.screen.blit(join.image, (join.x, join.y))
             
+            if screen == 'character':
+                self.screen.blit(mario.image, (mario.x, mario.y))
+                self.screen.blit(luigi.image, (luigi.x, luigi.y))
+                self.screen.blit(yoshi.image, (yoshi.x, yoshi.y))
+                self.screen.blit(popo.image, (popo.x, popo.y))
+                self.screen.blit(nana.image, (nana.x, nana.y))
+                self.screen.blit(link.image, (link.x, link.y))
+            elif screen == 'waiting':
+                self.screen.blit(ready.image, (ready.x, ready.y))
+
             self.screen.blit(back.image, (back.x, back.y))
 
             pg.display.flip()
@@ -334,5 +372,3 @@ while game.running:
     game.new()
 
 pg.quit()
-
-

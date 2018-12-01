@@ -20,10 +20,19 @@ FPS = 60
 
 # game statuses
 INTRO = 0
-START = 1
-GUIDE = 2
-ABOUT = 3
-GAME = 4
+GUIDE = 1
+ABOUT = 2
+START = 3
+WAITING = 4
+GAME = 5
+
+# characters
+MARIO = 0
+LUIGI = 1
+YOSHI = 2
+POPO = 3
+NANA = 4
+LINK = 5
 
 # character movement settings
 ACC = 0.5
