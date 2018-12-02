@@ -7,8 +7,6 @@ If the label does not exist for your new value, just create a new one.
 
 '''
 
-import pygame as pg
-
 # game values
 TITLE = "Super Smash Bros"
 FULL_WIDTH = 1100
@@ -27,12 +25,12 @@ WAITING = 4
 GAME = 5
 
 # characters
-MARIO = 0
-LUIGI = 1
-YOSHI = 2
-POPO = 3
-NANA = 4
-LINK = 5
+MARIO = 'Mario'
+LUIGI = 'Luigi'
+YOSHI = 'Yoshi'
+POPO = 'Popo'
+NANA = 'Nana'
+LINK = 'Link'
 
 # character movement settings
 ACC = 0.5

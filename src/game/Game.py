@@ -13,18 +13,46 @@ Other classes used in this directory are:
 For ease of navigation search the following labels:
 "IMPORTANT METHODS" - game events and updates
 "SCREENS" - different game menus
+"OTHERS" - other methods such as sending to the server
+
+Check Server.py for proper usage of the API!
 
 '''
+
+import sys
+# check if user added an ip address argument first
+if len(sys.argv) == 1:
+    print('Proper usage: python/python3 Game.py <ip_address_of_server>')
+    print('Type "ifconfig" in the terminal of the server to know its ip address.')
+    quit()
+
+print('========== SUPER SMASH BROS - Canonizado, Semilla, Serrano ==========')
+print('=== If at any time - the game crashes - check the Server terminal ===')
+print('Happy playing! This is the current version and limitations:')
+print('- Once you create a game and enter, you must reset for a new one.')
+print('- No option to recreate a game or returning to the menu menu.')
+print('- Game is just an endless loop that detects winner of each round.')
+print()
 
 from objects.Button import Button
 from objects.CharButton import CharButton
 from objects.ReadyButton import ReadyButton
 from objects.Platform import Platform
 from characters.Player import Player
+from threading import Thread
 from settings import *
 from images import *
 from Chat import Chat
 import pygame as pg
+import socket
+
+# server parameters
+HOST = sys.argv[1]
+PORT = 10000
+BUFFER = 1024
+SERVER = (HOST, PORT)
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 class Game:
     # ========================= IMPORTANT METHODS =========================
@@ -40,6 +68,7 @@ class Game:
         self.clock = pg.time.Clock()
         self.status = INTRO
         self.running = True
+        self.playerCount = 0
 
         # converted backgrounds for optimized game loop
         self.arena_bg = ARENA_BG.convert()
@@ -51,6 +80,12 @@ class Game:
         self.chat_once = False
         self.chat_init = False
         self.chat_messages = []
+
+        # sockets to UDP server
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        # multiple threads for the game and chat 
+        Thread(target=self.receive)
 
     def run(self):
         self.playing = True
@@ -256,10 +291,11 @@ class Game:
         link = CharButton('link', 920, 210, 150, 350)
 
         font = pg.font.Font(None, 100)
-        character = 10
         screen = 'name'
-        players = 0
         text = ''
+
+        enteredName = False
+        playerReady = False
 
         while self.status == START:
             if screen == 'name':
@@ -274,23 +310,26 @@ class Game:
             if screen == 'name' or screen == 'no_name':
                 text_surface = font.render(text, True, WHITE)
                 self.screen.blit(text_surface, (355,355))
-            elif screen == 'waiting':
-                text_surface = font.render(str(players), True, WHITE)
-                self.screen.blit(text_surface,(700,440))
             
             for event in pg.event.get():
                 pos = pg.mouse.get_pos()
 
                 if event.type == pg.QUIT:
+                    if enteredName:
+                        self.disconnectPlayer(text)
                     quit()
                 
                 if event.type == pg.MOUSEBUTTONDOWN:
-                    if back.isOver(pos):
+                    if back.isOver(pos) and not playerReady: 
                         if screen == 'name':
                             self.status = INTRO
+                            if enteredName:
+                                self.disconnectPlayer(text)
                             break
                         elif screen == 'no_name':
                             self.status = INTRO
+                            if enteredName:
+                                self.disconnectPlayer(text)
                             break
                         elif screen == 'character':
                             screen = 'name'
@@ -298,30 +337,38 @@ class Game:
                             screen = 'character'
                     if screen == 'character':
                         if mario.isOver(pos, 'mario'):
+                            self.editPlayerCharacter(text, MARIO)
                             character = MARIO
                             screen = 'waiting'
                         elif luigi.isOver(pos, 'luigi'):
+                            self.editPlayerCharacter(text, LUIGI)
                             character = LUIGI
                             screen = 'waiting'
                         elif yoshi.isOver(pos, 'yoshi'):
+                            self.editPlayerCharacter(text, YOSHI)
                             character = YOSHI
                             screen = 'waiting'
                         elif popo.isOver(pos, 'popo'):
+                            self.editPlayerCharacter(text, POPO)
                             character = POPO
                             screen = 'waiting'
                         elif nana.isOver(pos, 'nana'):
+                            self.editPlayerCharacter(text, NANA)
                             character = NANA
                             screen = 'waiting'
                         elif link.isOver(pos, 'link'):
+                            self.editPlayerCharacter(text, LINK)
                             character = LINK
                             screen = 'waiting'
                     if screen == 'waiting':
                         if ready.isOver(pos):
                             if ready.clicked:
-                                players -= 1
+                                self.editPlayerStatus(text, 'unready')
+                                playerReady = False
                                 ready.click()
                             else:
-                                players += 1
+                                self.editPlayerStatus(text, 'ready')
+                                playerReady = True
                                 ready.click()
 
                 if event.type == pg.MOUSEMOTION:
@@ -343,6 +390,14 @@ class Game:
                                 screen = 'no_name'
                             else:
                                 screen = 'character'
+                                if not enteredName:
+                                    enteredName = True
+                                    oldName = text
+                                    self.connectPlayer(text)
+                                elif enteredName:
+                                    self.editPlayerName(oldName, text)
+                                    oldName = text
+
                         elif event.key == pg.K_BACKSPACE:
                             text = text[:-1]
                         else:
@@ -351,6 +406,10 @@ class Game:
                                 char = event.unicode
                                 text += char
             
+                    elif screen == 'waiting':
+                        if event.key == pg.K_r:
+                            self.getPlayersReadyCount()
+
             if screen == 'character':
                 self.screen.blit(mario.image, (mario.x, mario.y))
                 self.screen.blit(luigi.image, (luigi.x, luigi.y))
@@ -359,12 +418,68 @@ class Game:
                 self.screen.blit(nana.image, (nana.x, nana.y))
                 self.screen.blit(link.image, (link.x, link.y))
             elif screen == 'waiting':
+                self.getPlayersReadyCount()
                 self.screen.blit(ready.image, (ready.x, ready.y))
+                text_surface = font.render(str(self.playerCount), True, WHITE)
+                self.screen.blit(text_surface,(700,440))
 
-            self.screen.blit(back.image, (back.x, back.y))
+            if not playerReady:
+                self.screen.blit(back.image, (back.x, back.y))
 
             pg.display.flip()
-        
+
+    # ========================= OTHERS =========================
+    def receive(self):
+        while True and self.running:
+            data, address = self.s.recvfrom(BUFFER)
+
+            # if there is data
+            if data:
+                message = data.decode().split()
+                action = message[0]
+
+                # update player count
+                if action == 'PLAYERS_READY':
+                    self.playerCount = int(message[1])
+
+    def send(self, message):
+        self.s.sendto(str.encode(message), SERVER)
+    
+    def connectPlayer(self, name):
+        message = 'CONNECT '
+        message += name
+        self.send(message)
+
+    def disconnectPlayer(self, name):
+        message = 'DISCONNECT '
+        message += name
+        self.send(message)
+
+    def editPlayerName(self, old_name, new_name):
+        message = 'EDIT_NAME '
+        message += old_name
+        message += ' '
+        message += new_name
+        self.send(message)
+
+    def editPlayerCharacter(self, name, character):
+        message = 'EDIT_CHARACTER '
+        message += name
+        message += ' '
+        message += character
+        self.send(message)
+
+    def editPlayerStatus(self, name, status):
+        message = 'EDIT_STATUS '
+        message += name
+        message += ' '
+        message += status
+        self.send(message)
+
+    def getPlayersReadyCount(self):
+        message = 'PLAYERS_READY'
+        self.send(message)
+
 # main start of the program
 game = Game()
 
