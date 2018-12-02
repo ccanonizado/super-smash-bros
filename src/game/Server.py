@@ -2,6 +2,8 @@
 
 Here is the API for the server:
 
+NOTE - This can be improved if something like json is used.
+
 ======================================================================
 
 CONNECT <name>
@@ -23,8 +25,17 @@ PLAYERS_READY <num_of_players>
 - returns number of players ready
 
 START_GAME
-- if number of players is sufficient then game is started
+- if number of players is sufficient then game starts
 - all players' x and y positions are updated to fit the game screen
+
+JOIN_GAME
+- repeatedly attempts to join game if it has started
+
+UPDATE_PLAYER
+- repeatedly updates status, health, and position of one player
+
+UPDATE_ALL_PLAYERS
+- repeatedly updates status, health, and position of all players
 
 ======================================================================
 
@@ -56,6 +67,7 @@ s.bind(SERVER)
 
 players = {}
 playersReady = 0
+game = WAITING
 
 print('Server is now up and running!')
 print('There must be 3-6 players ready before starting the game.')
@@ -110,17 +122,78 @@ while True:
     # return number of players ready
     elif action == 'PLAYERS_READY':
         data = 'PLAYERS_READY '
-        data += ' '
         data += str(playersReady)
         data = str.encode(data)
 
     elif action == 'START_GAME':
-        if playersReady >= 2 or playersReady <= 6:
-            print('hey')
+        if playersReady >= 1 and playersReady <= 6:
+            data = 'START_GAME '
+            i = 0
+            for key, value in players.items():
+                values = value.split(' ')
+                # initialize the coordinates of all players
+                # 0 - status | 1 - character (permanent) | 2 - health | 3 - xPos | 4 - yPos
+                
+                # these x and y values are hardcoded depending on the amount of players
+                if i == 0:
+                    values[3] = '157'
+                    values[4] = '0'
+                elif i == 1:
+                    values[3] = '534'
+                    values[4] = '0'
+                elif i == 2:
+                    values[3] = '345'
+                    values[4] = '0'
+                elif i == 3:
+                    values[3] = '157'
+                    values[4] = '600'
+                elif i == 4:
+                    values[3] = '534'
+                    values[4] = '600'
+                elif i == 5:
+                    values[3] = '345'
+                    values[4] = '400'
 
-    # this should not be executed - but just to catch irregularities
-    else:
-        print(action)
+                i += 1
+                values = ' '.join(values)
+                data += key + ' ' + values + '|'
 
+            data = str.encode(data)
+            game = GAME
+    
+    elif action == 'JOIN_GAME':
+        data = 'JOIN_GAME '
+        data += str(game)
+        data = str.encode(data)
+
+    elif action == 'UPDATE_PLAYER':
+        data = 'UPDATE_PLAYER '
+
+        name = message[1]
+        status = message[2]
+        health = message[3]
+        xPos = message[4]
+        yPos = message[5]
+
+        values = players[name].split()
+        # 0 - status | 1 - character (permanent) | 2 - health | 3 - xPos | 4 - yPos
+        values[0] = status
+        values[2] = health
+        values[3] = xPos
+        values[4] = yPos
+        players[name] = ' '.join(values)
+
+        data += name + ' ' + status + ' ' + health + ' ' + xPos + ' ' + yPos
+        data = str.encode(data)
+    
+    elif action == 'UPDATE_ALL_PLAYERS':
+        data = 'UPDATE_ALL_PLAYERS '
+        
+        for key, value in players.items():
+            data += key + ' ' + value + '|'
+
+        data = str.encode(data)
+
+    # send the response back to the client
     if data:
         s.sendto(data, address)

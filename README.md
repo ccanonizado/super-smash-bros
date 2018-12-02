@@ -10,10 +10,15 @@ CMSC 137 project made in Python and developed by:
 Our Super Smash Bros is *currently in development* but in order to run, clone or download this repository then **go to the /src/game/** directory. Once there, you may execute the program:
 
 ```
-# if python 3 is not your default
-python3 Game.py
-# else
-python Game.py
+# Remember to use python3!
+
+# First, run the server:
+python/python3 Server.py
+
+# Then find the server's ip address and run the client:
+python/python3 Game.py <ip_address>
+
+# Have fun playing!
 ```
 
 Some dependencies you must have:

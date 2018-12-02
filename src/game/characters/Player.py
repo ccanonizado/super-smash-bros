@@ -18,14 +18,19 @@ LEFT = 'left'
 RIGHT = 'right'
 
 class Player(pg.sprite.Sprite):
-    def __init__(self, game, pos):
+    def __init__(self, game, currPlayer, name, status, health, pos):
         pg.sprite.Sprite.__init__(self)
+
+        self.currPlayer = currPlayer
+        self.name = name
+        self.status = status
+        self.health = health
+        self.pos = pos
 
         self.game = game
         self.image = maS1
         self.rect = self.image.get_rect()
         self.rect.center = (GAME_WIDTH / 2, HEIGHT / 2)
-        self.pos = pos
         self.w = self.image.get_size()[0]
         self.h = self.image.get_size()[1]
         self.vel = vec(0,0)
@@ -46,7 +51,7 @@ class Player(pg.sprite.Sprite):
         keys = pg.key.get_pressed()
 
         # block any movement if player pressed 'Enter' to chat
-        if not self.game.chatting:
+        if not self.game.chatting and self.currPlayer == self.name:
             if self.walkCount+1 >= 24:
                 self.walkCount = 0 
 
