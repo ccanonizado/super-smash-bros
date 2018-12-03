@@ -32,7 +32,18 @@ POPO = 'Popo'
 NANA = 'Nana'
 LINK = 'Link'
 
-# character movement settings
+# player directions
+LEFT = 'left'
+RIGHT = 'right'
+
+# player movement types
+WALK = 'walk'
+STAND = 'stand'
+ATTACK = 'attack'
+DAMAGED = 'damaged'
+DEAD = 'dead'
+
+# player movement settings
 ACC = 0.5
 FRIC = -0.12
 VEL = 15

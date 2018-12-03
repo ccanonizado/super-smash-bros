@@ -14,18 +14,18 @@ walkL = [pg.transform.flip(image, True, False) for image in walkR]
 standR = maS1
 standL = pg.transform.flip(standR, True, False)
 
-LEFT = 'left'
-RIGHT = 'right'
-
 class Player(pg.sprite.Sprite):
-    def __init__(self, game, currPlayer, name, status, health, pos):
+    def __init__(self, game, curr_player, name, status, health, pos, direc, walk_c, move):
         pg.sprite.Sprite.__init__(self)
 
-        self.currPlayer = currPlayer
+        self.curr_player = curr_player
         self.name = name
         self.status = status
         self.health = health
         self.pos = pos
+        self.direc = direc
+        self.walk_c = 0
+        self.move = move
 
         self.game = game
         self.image = maS1
@@ -35,9 +35,6 @@ class Player(pg.sprite.Sprite):
         self.h = self.image.get_size()[1]
         self.vel = vec(0,0)
         self.acc = vec(0,0)
-
-        self.walkCount = 0
-        self.direction = RIGHT
 
     def jump(self):
         self.rect.x += 1
@@ -51,32 +48,43 @@ class Player(pg.sprite.Sprite):
         keys = pg.key.get_pressed()
 
         # block any movement if player pressed 'Enter' to chat
-        if not self.game.chatting and self.currPlayer == self.name:
-            if self.walkCount+1 >= 24:
-                self.walkCount = 0 
+        if not self.game.chatting and self.curr_player == self.name:
+            if self.walk_c == 7:
+                self.walk_c = 0 
 
             if keys[pg.K_UP]:
                 self.jump()
-                self.walkCount = 0
+                self.walk_c = 0
 
             if keys[pg.K_LEFT]:
                 self.acc.x = -ACC
-                self.walkCount += 1
-                self.direction = LEFT
-                self.image = walkL[self.walkCount//3]
+                self.walk_c += 1
+                self.direc = LEFT
+                self.move = WALK
 
             elif keys[pg.K_RIGHT]:
                 self.acc.x = ACC
-                self.walkCount += 1
-                self.direction = RIGHT
-                self.image = walkR[self.walkCount//3]
+                self.walk_c += 1
+                self.direc = RIGHT
+                self.move = WALK
 
             else:
-                if self.direction == RIGHT:
-                    self.image = standR
-                elif self.direction == LEFT: 
-                    self.image = standL
-                self.walkCount = 0 
+                self.walk_c = 0
+                self.move = STAND
+
+        # updating the images section
+        if self.move == WALK:
+            if self.direc == LEFT:
+                self.image = walkL[self.walk_c]
+            elif self.direc == RIGHT:
+                self.image = walkR[self.walk_c]
+        
+        elif self.move == STAND:
+            if self.direc == LEFT:
+                self.image = standL
+            elif self.direc == RIGHT:
+                self.image = standR
+
 
         self.acc.x += self.vel.x * FRIC
         self.vel += self.acc

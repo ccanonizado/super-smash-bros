@@ -2,12 +2,13 @@
 
 Here is the API for the server:
 
-NOTE - This can be improved if something like json is used.
-
 ======================================================================
 
 CONNECT <name>
 - connects player to game
+
+CHECK_NAME <name>
+- checks if name is taken returns 'taken' or 'free'
 
 EDIT_NAME <old_name> <new_name>
 - edits player's name if connected
@@ -31,6 +32,12 @@ START_GAME
 JOIN_GAME
 - repeatedly attempts to join game if it has started
 
+CREATE_CHAT
+- creates a chat lobby given the number of players in the game
+
+JOIN_CHAT
+- joins existing lobby from CREATE_CHAT
+
 UPDATE_PLAYER
 - repeatedly updates status, health, and position of one player
 
@@ -39,8 +46,18 @@ UPDATE_ALL_PLAYERS
 
 ======================================================================
 
-Player values (space delimiter):
-name: status character charHealth charXPos charYPos
+NOTE - for reference
+name: {
+    name: - <string>
+    status: ready / unready / alive / dead | <string>
+    character: - <string>
+    health: - <int>
+    xPos: - <float>
+    yPos: - <float>
+    direc: - (direction) | <string>
+    walk_c: - (walk count) | <int>
+    move: - walk / stand / attack / damaged / dead | <string>
+}
 
 ======================================================================
 
@@ -54,6 +71,7 @@ dead
 
 from settings import *
 import socket
+import json
 
 # server parameters
 HOST = 'localhost'
@@ -66,8 +84,9 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(SERVER)
 
 players = {}
-playersReady = 0
+players_ready = 0
 game = WAITING
+chat_lobby = 0
 
 print('Server is now up and running!')
 print('There must be 3-6 players ready before starting the game.')
@@ -85,12 +104,33 @@ while True:
     # add player to player list and add initial character values
     if action == 'CONNECT':
         print('{} has connected!'.format(message[1]))
-        players[message[1]] = 'unready none 100 0 0'
+        players[message[1]] = {
+            'character': 'none',
+            'status': 'unready',
+            'health': '100',
+            'xPos': '0',
+            'yPos': '0',
+            'direc': 'right',
+            'walk_c': '0',
+            'move': 'stand'
+        }
 
     # remove player from players list
     elif action == 'DISCONNECT':
         print('{} has disconnected!'.format(message[1]))
         players.pop(message[1])
+
+    # checks if name is in the players dict
+    elif action == 'CHECK_NAME':
+        data = 'CHECK_NAME '
+        if len(message) == 1:
+            data += 'free'
+        else:
+            if message[1] in players:
+                data += 'taken'
+            else:
+                data += 'free'
+        data = str.encode(data)
 
     # change if name of player passed is different
     elif action == 'EDIT_NAME':
@@ -101,63 +141,58 @@ while True:
     # change value of the character which is initially 'none'
     elif action == 'EDIT_CHARACTER':
         print('{} picked {}'.format(message[1], message[2]))
-        playerValues = players[message[1]].split()
-        playerValues[1] = message[2]
-        playerValues = ' '.join(playerValues)
-        players[message[1]] = playerValues
+        players[message[1]]['character'] = message[2]
 
     # change value of the status (check API for more)
     elif action == 'EDIT_STATUS':
         print('{} is now {}'.format(message[1], message[2]))
-        playerValues = players[message[1]].split()
-        playerValues[0] = message[2]
-        playerValues = ' '.join(playerValues)
-        players[message[1]] = playerValues
+        players[message[1]]['status'] = message[2]
 
         if message[2] == 'ready':
-            playersReady += 1
+            players_ready += 1
         elif message[2] == 'unready':
-            playersReady -= 1
+            players_ready -= 1
 
     # return number of players ready
     elif action == 'PLAYERS_READY':
         data = 'PLAYERS_READY '
-        data += str(playersReady)
+        data += str(players_ready)
         data = str.encode(data)
 
     elif action == 'START_GAME':
-        if playersReady >= 1 and playersReady <= 6:
+        if players_ready >= 1 and players_ready <= 6:
             data = 'START_GAME '
             i = 0
-            for key, value in players.items():
-                values = value.split(' ')
-                # initialize the coordinates of all players
-                # 0 - status | 1 - character (permanent) | 2 - health | 3 - xPos | 4 - yPos
-                
+
+            for player in players.values():
                 # these x and y values are hardcoded depending on the amount of players
                 if i == 0:
-                    values[3] = '157'
-                    values[4] = '0'
+                    player['xPos'] = '157'
+                    player['yPos'] = '0'
+                    player['direc'] = 'right'
                 elif i == 1:
-                    values[3] = '534'
-                    values[4] = '0'
+                    player['xPos'] = '534'
+                    player['yPos'] = '0'
+                    player['direc'] = 'left'
                 elif i == 2:
-                    values[3] = '345'
-                    values[4] = '0'
+                    player['xPos'] = '345'
+                    player['yPos'] = '0'
+                    player['direc'] = 'right'
                 elif i == 3:
-                    values[3] = '157'
-                    values[4] = '600'
+                    player['xPos'] = '157'
+                    player['yPos'] = '600'
+                    player['direc'] = 'right'
                 elif i == 4:
-                    values[3] = '534'
-                    values[4] = '600'
+                    player['xPos'] = '534'
+                    player['yPos'] = '600'
+                    player['direc'] = 'left'
                 elif i == 5:
-                    values[3] = '345'
-                    values[4] = '400'
-
+                    player['xPos'] = '345'
+                    player['yPos'] = '400'
+                    player['direc'] = 'left'
                 i += 1
-                values = ' '.join(values)
-                data += key + ' ' + values + '|'
 
+            data += json.dumps(players)
             data = str.encode(data)
             game = GAME
     
@@ -166,34 +201,44 @@ while True:
         data += str(game)
         data = str.encode(data)
 
-    elif action == 'UPDATE_PLAYER':
-        data = 'UPDATE_PLAYER '
+    elif action == 'CREATE_CHAT':
+        chat_lobby = message[1]
+        print("Created chat lobby: {}".format(message[1]))
 
-        name = message[1]
-        status = message[2]
-        health = message[3]
-        xPos = message[4]
-        yPos = message[5]
-
-        values = players[name].split()
-        # 0 - status | 1 - character (permanent) | 2 - health | 3 - xPos | 4 - yPos
-        values[0] = status
-        values[2] = health
-        values[3] = xPos
-        values[4] = yPos
-        players[name] = ' '.join(values)
-
-        data += name + ' ' + status + ' ' + health + ' ' + xPos + ' ' + yPos
+    elif action == 'JOIN_CHAT':
+        data = 'JOIN_CHAT '
+        data += str(chat_lobby)
         data = str.encode(data)
+
+    elif action == 'UPDATE_PLAYER':
+        message.pop(0)
+        message = ' '.join(message)
+        payload = json.loads(message)
+
+        name = payload['name']
+        status = payload['status']
+        health = payload['health']
+        xPos = payload['xPos']
+        yPos = payload['yPos']
+        direc = payload['direc']
+        walk_c = payload['walk_c']
+        move = payload['move']
+
+        players[name]['status'] = status
+        players[name]['health'] = health
+        players[name]['xPos'] = xPos
+        players[name]['yPos'] = yPos
+        players[name]['direc'] = direc
+        players[name]['walk_c'] = walk_c
+        players[name]['move'] = move
     
     elif action == 'UPDATE_ALL_PLAYERS':
         data = 'UPDATE_ALL_PLAYERS '
-        
-        for key, value in players.items():
-            data += key + ' ' + value + '|'
-
+        data += json.dumps(players)
         data = str.encode(data)
 
     # send the response back to the client
     if data:
+        # to see which action is the problem - uncomment line below
+        # print(action)
         s.sendto(data, address)

@@ -31,7 +31,7 @@ class Chat:
 
 	# to be executed in a thread after connectToLobby
 	def receiveMessages(self):
-		while(True):
+		while self.g.running:
 			chat = self.packet.ChatPacket()
 			data = self.s.recv(BUFFER)
 			self.packet.ParseFromString(data)
@@ -57,7 +57,6 @@ class Chat:
 		data = self.s.recv(BUFFER)
 		packet.ParseFromString(data)
 		return packet
-
 
 	'''
 

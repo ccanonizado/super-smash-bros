@@ -2,8 +2,6 @@
 
 This is the main game file!
 
-NOTE - This can be improved if something like json is used.
-
 All the other classes are distributed in the different directories:
 - /src/game/characters/ - Player.py and all other Character.pys
 - /src/game/objects/ - Base.py, Button.py, and Platform.py
@@ -28,6 +26,8 @@ if len(sys.argv) == 1:
     print('Type "ifconfig" in the terminal of the server to know its ip address.')
     quit()
 
+print('!!! Make sure a server is running before playing - check Server.py!!!')
+print()
 print('========== SUPER SMASH BROS - Canonizado, Semilla, Serrano ==========')
 print('=== If at any time - the game crashes - check the Server terminal ===')
 print('Happy playing! This is the current version and limitations:')
@@ -47,6 +47,7 @@ from images import *
 from Chat import Chat
 import pygame as pg
 import socket
+import json
 
 print()
 print('UPDATES (errors will show up here if ever):')
@@ -74,7 +75,10 @@ class Game:
         self.status = INTRO
         self.running = True # game is running
         self.initialized = False # initialized game in arena (with players)
-        self.playerCount = 0
+        self.created_chat = False 
+        self.player_count = 0
+        self.name_available = True
+        self.curr_player = ''
 
         # converted backgrounds for optimized game loop
         self.arena_bg = ARENA_BG.convert()
@@ -90,13 +94,10 @@ class Game:
         # socket to UDP server
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        # multiple threads for the game and chat 
-        self.gameThread = Thread(target=self.receive)
-        self.gameThread.daemon = True
-        self.gameThread.start()
-        # self.chatThread = Thread(target=REPLACE)
-        # self.chatThread.daemon = True
-        # self.gameThread.start()
+        # multiple threads for the game and chat (chat is in join game)
+        self.game_thread = Thread(target=self.receive)
+        self.game_thread.daemon = True
+        self.game_thread.start()
 
     def run(self):
         self.playing = True
@@ -317,13 +318,18 @@ class Game:
         link = CharButton('link', 920, 210, 150, 350)
 
         font = pg.font.Font(None, 100)
+        font2 = pg.font.Font(None, 40)
         screen = 'name'
-        text = ''
 
+        old_name = ''
         enteredName = False
         playerReady = False
 
         while self.status == START:
+
+            # repeatedly check if the name is available
+            self.checkName(self.curr_player)
+
             if screen == 'name':
                 self.screen.blit(START_NAME_BG, ORIGIN)
             elif screen == 'no_name':
@@ -334,8 +340,14 @@ class Game:
                 self.screen.blit(START_WAITING_BG, ORIGIN)
 
             if screen == 'name' or screen == 'no_name':
-                text_surface = font.render(text, True, WHITE)
+                text_surface = font.render(self.curr_player, True, WHITE)
                 self.screen.blit(text_surface, (355,355))
+
+                if not self.name_available:
+                    if self.curr_player != old_name: 
+                        error = 'Name exists - try a new one!'
+                        text_surface = font2.render(error, True, WHITE)
+                        self.screen.blit(text_surface, (360,430))
             
             for event in pg.event.get():
                 pos = pg.mouse.get_pos()
@@ -345,7 +357,7 @@ class Game:
                     if self.playing:
                         self.playing = False
                     if enteredName:
-                        self.disconnectPlayer(text)
+                        self.disconnectPlayer(self.curr_player)
                     quit()
                 
                 if event.type == pg.MOUSEBUTTONDOWN:
@@ -353,12 +365,12 @@ class Game:
                         if screen == 'name':
                             self.status = INTRO
                             if enteredName:
-                                self.disconnectPlayer(text)
+                                self.disconnectPlayer(self.curr_player)
                             break
                         elif screen == 'no_name':
                             self.status = INTRO
                             if enteredName:
-                                self.disconnectPlayer(text)
+                                self.disconnectPlayer(self.curr_player)
                             break
                         elif screen == 'character':
                             screen = 'name'
@@ -367,32 +379,32 @@ class Game:
 
                     if screen == 'character':
                         if mario.isOver(pos, 'mario'):
-                            self.editPlayerCharacter(text, MARIO)
+                            self.editPlayerCharacter(self.curr_player, MARIO)
                             screen = 'waiting'
                         elif luigi.isOver(pos, 'luigi'):
-                            self.editPlayerCharacter(text, LUIGI)
+                            self.editPlayerCharacter(self.curr_player, LUIGI)
                             screen = 'waiting'
                         elif yoshi.isOver(pos, 'yoshi'):
-                            self.editPlayerCharacter(text, YOSHI)
+                            self.editPlayerCharacter(self.curr_player, YOSHI)
                             screen = 'waiting'
                         elif popo.isOver(pos, 'popo'):
-                            self.editPlayerCharacter(text, POPO)
+                            self.editPlayerCharacter(self.curr_player, POPO)
                             screen = 'waiting'
                         elif nana.isOver(pos, 'nana'):
-                            self.editPlayerCharacter(text, NANA)
+                            self.editPlayerCharacter(self.curr_player, NANA)
                             screen = 'waiting'
                         elif link.isOver(pos, 'link'):
-                            self.editPlayerCharacter(text, LINK)
+                            self.editPlayerCharacter(self.curr_player, LINK)
                             screen = 'waiting'
 
                     if screen == 'waiting':
                         if ready.isOver(pos):
                             if ready.clicked:
-                                self.editPlayerStatus(text, 'unready')
+                                self.editPlayerStatus(self.curr_player, 'unready')
                                 playerReady = False
                                 ready.click()
                             else:
-                                self.editPlayerStatus(text, 'ready')
+                                self.editPlayerStatus(self.curr_player, 'ready')
                                 playerReady = True
                                 ready.click()
 
@@ -412,30 +424,36 @@ class Game:
                     if screen == 'name' or screen == 'no_name' or screen == 'waiting':
                         if event.key == pg.K_RETURN:
                             if screen != 'waiting':
-                                if len(text) == 0:
+                                if len(self.curr_player) == 0:
                                     screen = 'no_name'
                                     print("INVALID NAME! Your name cannot be blank!")
                                 else:
-                                    screen = 'character'
-                                    if not enteredName:
-                                        enteredName = True
-                                        oldName = text
-                                        self.connectPlayer(text)
-                                        self.currPlayer = text
-                                    elif enteredName:
-                                        self.editPlayerName(oldName, text)
-                                        self.currPlayer = text
-                                        oldName = text
+                                    if self.name_available or self.curr_player == old_name:
+                                        screen = 'character'
+                                        if not enteredName:
+                                            enteredName = True
+                                            old_name = self.curr_player
+                                            self.connectPlayer(self.curr_player)
+                                        elif enteredName:
+                                            self.editPlayerName(old_name, self.curr_player)
+                                            old_name = self.curr_player
+                                    elif not self.name_available:
+                                        print("NAME EXISTS! Enter a unique one!")
                             else:
+                                # initialize chat to create lobby
+                                self.chat = Chat(self)
+                                lobby_id = self.chat.createLobby(6).lobby_id
+                                self.createChatLobby(lobby_id)
+
                                 self.startGame()
 
                         elif event.key == pg.K_BACKSPACE:
-                            text = text[:-1]
+                            self.curr_player = self.curr_player[:-1]
                         else:
                             # limit character length for the screen
-                            if len(text) < 10:
+                            if len(self.curr_player) < 10:
                                 char = event.unicode
-                                text += char
+                                self.curr_player += char
 
             if screen == 'character':
                 self.screen.blit(mario.image, (mario.x, mario.y))
@@ -448,7 +466,7 @@ class Game:
             elif screen == 'waiting':
                 self.getPlayersReadyCount()
                 self.screen.blit(ready.image, (ready.x, ready.y))
-                text_surface = font.render(str(self.playerCount), True, WHITE)
+                text_surface = font.render(str(self.player_count), True, WHITE)
                 self.screen.blit(text_surface,(700,440))
                 self.joinGame()
 
@@ -469,25 +487,34 @@ class Game:
 
                 # update player count
                 if action == 'PLAYERS_READY':
-                    self.playerCount = int(message[1])
+                    self.player_count = int(message[1])
+
+                # check name availability
+                if action == 'CHECK_NAME':
+                    if message[1] == 'taken':
+                        self.name_available = False
+                    elif message[1] == 'free':
+                        self.name_available = True
 
                 # instantiate all the players in the arena
                 elif action == 'START_GAME':
                     if not self.initialized:
                         message.pop(0)
-                        values = ' '.join(message)
-                        values = values.split('|')
-                        values.pop(len(values)-1)
+                        message = ' '.join(message)
+                        data = json.loads(message)
+
                         self.players = {}
-                        for value in values:
-                            line = value.split(' ')
-                            name = line[0]
-                            health = int(line[3])
-                            xPos = int(line[4])
-                            yPos = int(line[5])
-                            pos = [xPos, yPos]
-                            player = Player(self, self.currPlayer, name, 'alive', health, pos)
-                            self.players[name] = player
+                        for key, value in data.items():
+                            n = key
+                            x = float(value['xPos'])
+                            y = float(value['yPos'])
+                            d = value['direc']
+                            h = int(value['health'])
+                            w = int(value['walk_c'])
+                            m = value['move']
+                            pos = [x, y]
+                            player = Player(self, self.curr_player, n, 'alive', h, pos, d, w, m)
+                            self.players[n] = player
                             self.all_sprites.add(player)
                         self.initialized = True
 
@@ -495,30 +522,44 @@ class Game:
                 elif action == 'JOIN_GAME':
                     if int(message[1]) == GAME:
                         self.startGame()
-                        self.status = GAME
+                        self.status = GAME                        
+                        self.joinChatLobby()
+
+                elif action == 'JOIN_CHAT':
+                    if not self.created_chat:
+                        self.chat = Chat(self)
+                        try:
+                            self.chat.connectToLobby(message[1], self.curr_player)
+                            self.chat_messages.append('You are in game {}!'.format(message[1]))
+                            self.chat_thread = Thread(target=self.chat.receiveMessages)
+                            self.chat_thread.daemon = True
+                            self.chat_thread.start()
+                        except:
+                            self.chat_messages.append('CHAT ERROR! Server might be down!')
+                            print('CHAT ERROR! Server might be down!')
+                        self.created_chat = True
 
                 elif action == 'UPDATE_ALL_PLAYERS':
                     message.pop(0)
-                    values = ' '.join(message)
-                    values = values.split('|')
-                    values.pop(len(values)-1)
-                    
-                    update = {}
-                    for value in values:
-                        line = value.split(' ')
-                        name = line[0]
-                        line.pop(0)
-                        line = ' '.join(line)
-                        update[name] = line
+                    message = ' '.join(message)
+                    data = json.loads(message)
                     
                     for player in self.players.values():
-                        value = update[player.name]
-                        value = value.split(' ')
-                        player.status = value[0]
-                        player.health = int(value[2])
-                        xPos = float(value[3])
-                        yPos = float(value[4])
+                        name = player.name
+                        status = data[name]['status']
+                        health = int(data[name]['health'])
+                        xPos = float(data[name]['xPos'])
+                        yPos = float(data[name]['yPos'])
+                        direc = data[name]['direc']
+                        walk_c = int(data[name]['walk_c'])
+                        move = data[name]['move']
+
+                        player.status = status
+                        player.health = health
                         player.pos = [xPos, yPos]
+                        player.direc = direc
+                        player.walk_c = walk_c
+                        player.move = move
 
     def send(self, message):
         self.s.sendto(str.encode(message), SERVER)
@@ -530,6 +571,11 @@ class Game:
 
     def disconnectPlayer(self, name):
         message = 'DISCONNECT '
+        message += name
+        self.send(message)
+
+    def checkName(self, name):
+        message = 'CHECK_NAME '
         message += name
         self.send(message)
 
@@ -560,11 +606,29 @@ class Game:
         message = 'JOIN_GAME'
         self.send(message)
 
+    def createChatLobby(self, lobby_id):
+        message ='CREATE_CHAT '
+        message += str(lobby_id)
+        self.send(message)
+
+    def joinChatLobby(self):
+        message = 'JOIN_CHAT'
+        self.send(message)
+
     def updatePlayer(self):
         message = 'UPDATE_PLAYER '
-        player = self.players[self.currPlayer]
-        message += player.name + ' ' + player.status + ' ' + str(player.health) + ' '
-        message += str(player.pos[0]) + ' ' + str(player.pos[1])
+        player = self.players[self.curr_player]
+        data = {
+            'name': player.name,
+            'status': player.status,
+            'health': str(player.health),
+            'xPos': str(player.pos[0]),
+            'yPos': str(player.pos[1]),
+            'direc': player.direc,
+            'walk_c': str(player.walk_c),
+            'move': player.move
+        }
+        message += json.dumps(data)
         self.send(message)
 
     def updateAllPlayers(self):
