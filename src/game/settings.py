@@ -39,17 +39,19 @@ RIGHT = 'right'
 # player movement types
 WALK = 'walk'
 STAND = 'stand'
-ATTACK = 'attack'
+WEAK_ATTACK = 'weak'
+HEAVY_ATTACK = 'heavy'
 DAMAGED = 'damaged'
 DEAD = 'dead'
 
 # player movement settings
-ACC = 0.5
 FRIC = -0.12
 VEL = 15
 
 # color settings
 BLACK = (0, 0, 0)
-BROWN = (45, 33, 19)
-BLUE = (59, 148, 238)
+RED = (153, 38, 0)
+GREEN = (40, 77, 0)
+GRAY = (191, 191, 191)
 WHITE = (255, 255, 255)
+ORANGE = (255, 117, 26)

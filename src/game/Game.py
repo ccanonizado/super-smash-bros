@@ -36,15 +36,25 @@ print('- No option to recreate a game or returning to the menu menu.')
 print('- Game is just an endless loop that detects winner of each round.')
 print()
 
+# characters
+from characters.Mario import Mario
+from characters.Luigi import Luigi
+from characters.Yoshi import Yoshi
+from characters.Popo import Popo
+from characters.Nana import Nana
+from characters.Link import Link
+
+# other objects
 from objects.Button import Button
 from objects.CharButton import CharButton
 from objects.ReadyButton import ReadyButton
 from objects.Platform import Platform
-from characters.Player import Player
 from threading import Thread
 from settings import *
 from images import *
 from Chat import Chat
+
+# dependencies
 import pygame as pg
 import socket
 import json
@@ -76,11 +86,11 @@ class Game:
         self.running = True # game is running
         self.initialized = False # initialized game in arena (with players)
         self.created_chat = False 
-        self.player_count = 0
         self.name_available = True
+        self.player_count = 0
         self.curr_player = ''
 
-        # converted backgrounds for optimized game loop
+        # converted background images for optimized game loop
         self.arena_bg = ARENA_BG.convert()
         self.chat_bg = CHAT_BG.convert()
 
@@ -130,6 +140,7 @@ class Game:
         # the players will be added after starting the game
         # see startGame() below
 
+        self.enemy_sprites = pg.sprite.Group()
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
 
@@ -169,6 +180,12 @@ class Game:
 
             # majority of chat flow
             if event.type == pg.KEYDOWN:
+                if event.key == pg.K_z:
+                    self.players[self.curr_player].weakAttack()
+
+                elif event.key == pg.K_x:
+                    self.players[self.curr_player].heavyAttack()
+
                 if event.key == pg.K_RETURN:
                     if not self.chatting:
                         self.chatting = True
@@ -220,10 +237,16 @@ class Game:
 
     # for consistently drawing the background and the sprites
     def draw(self):
+        # show the background
         self.screen.blit(self.arena_bg, ORIGIN)
         self.screen.blit(self.chat_bg, (700,0))
+        
+        # check method below
+        self.drawStatsBoard()
+        
+        # show all the sprites
         self.all_sprites.draw(self.screen)
-
+        
         # show the input chat
         font = pg.font.Font(None, 30)
         text_surface = font.render(self.chat_text, True, WHITE)
@@ -236,6 +259,33 @@ class Game:
             self.screen.blit(text_surface2, (730,95+(i*25)))
 
         pg.display.flip()
+
+    # board with the players' name and life
+    def drawStatsBoard(self):
+        font = pg.font.Font(None, 22)
+        text = font.render('Player - Life', True, WHITE)
+        pg.draw.rect(self.screen, BLACK, (10, 10, 140, 20))
+        pg.draw.rect(self.screen, GRAY, (10, 30, 140, 30*len(self.players)))
+        self.screen.blit(text, (37,12))
+
+        i = 0        
+        for player in self.players.values():
+            name = player.name
+            stats = name + ' - ' + str(player.health)
+            diff = 10 - len(player.name)
+
+            # color text according to player's health
+            if player.health > 60:
+                text = font.render(stats, True, GREEN)
+            elif player.health <= 60 and player.health > 20:
+                text = font.render(stats, True, ORANGE) 
+            elif player.health <= 20 and player.health > 0:
+                text = font.render(stats, True, RED)
+            elif player.health == 0:
+                text = font.render(stats, True, BLACK)
+
+            self.screen.blit(text, (12+(diff*5),40+(i*30)))
+            i += 1
 
     # ========================= SCREENS =========================
 
@@ -318,7 +368,6 @@ class Game:
         link = CharButton('link', 920, 210, 150, 350)
 
         font = pg.font.Font(None, 100)
-        font2 = pg.font.Font(None, 40)
         screen = 'name'
 
         old_name = ''
@@ -340,14 +389,12 @@ class Game:
                 self.screen.blit(START_WAITING_BG, ORIGIN)
 
             if screen == 'name' or screen == 'no_name':
-                text_surface = font.render(self.curr_player, True, WHITE)
-                self.screen.blit(text_surface, (355,355))
-
                 if not self.name_available:
                     if self.curr_player != old_name: 
-                        error = 'Name exists - try a new one!'
-                        text_surface = font2.render(error, True, WHITE)
-                        self.screen.blit(text_surface, (360,430))
+                        self.screen.blit(START_NAME_EXISTS_BG, ORIGIN)
+
+                text_surface = font.render(self.curr_player, True, WHITE)
+                self.screen.blit(text_surface, (355,355))
             
             for event in pg.event.get():
                 pos = pg.mouse.get_pos()
@@ -513,9 +560,26 @@ class Game:
                             w = int(value['walk_c'])
                             m = value['move']
                             pos = [x, y]
-                            player = Player(self, self.curr_player, n, 'alive', h, pos, d, w, m)
+                            char = value['character']
+                            a = 'alive'
+
+                            if char == MARIO:
+                                player = Mario(self, self.curr_player, n, a, h, pos, d, w, m)
+                            elif char == LUIGI:
+                                player = Luigi(self, self.curr_player, n, a, h, pos, d, w, m)
+                            elif char == YOSHI:
+                                player = Yoshi(self, self.curr_player, n, a, h, pos, d, w, m)
+                            elif char == POPO:
+                                player = Popo(self, self.curr_player, n, a, h, pos, d, w, m)
+                            elif char == NANA:
+                                player = Nana(self, self.curr_player, n, a, h, pos, d, w, m)
+                            elif char == LINK:
+                                player = Link(self, self.curr_player, n, a, h, pos, d, w, m)
+
                             self.players[n] = player
                             self.all_sprites.add(player)
+                            if self.curr_player != n:
+                                self.enemy_sprites.add(player)
                         self.initialized = True
 
                 # check if game has started - if it has started - join
@@ -615,6 +679,11 @@ class Game:
         message = 'JOIN_CHAT'
         self.send(message)
 
+    def attackPlayer(self, player, damage, move):
+        message = 'ATTACK_PLAYER '
+        message += player + ' ' + str(damage) + ' ' + move
+        self.send(message)
+ 
     def updatePlayer(self):
         message = 'UPDATE_PLAYER '
         player = self.players[self.curr_player]

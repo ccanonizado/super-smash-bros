@@ -44,6 +44,9 @@ UPDATE_PLAYER
 UPDATE_ALL_PLAYERS
 - repeatedly updates status, health, and position of all players
 
+ATTACK_PLAYER <player> <damage>
+- player is being attacked with N damage
+
 ======================================================================
 
 NOTE - for reference
@@ -217,7 +220,6 @@ while True:
 
         name = payload['name']
         status = payload['status']
-        health = payload['health']
         xPos = payload['xPos']
         yPos = payload['yPos']
         direc = payload['direc']
@@ -225,7 +227,6 @@ while True:
         move = payload['move']
 
         players[name]['status'] = status
-        players[name]['health'] = health
         players[name]['xPos'] = xPos
         players[name]['yPos'] = yPos
         players[name]['direc'] = direc
@@ -236,6 +237,15 @@ while True:
         data = 'UPDATE_ALL_PLAYERS '
         data += json.dumps(players)
         data = str.encode(data)
+
+    elif action == 'ATTACK_PLAYER':
+        health = int(players[message[1]]['health'])
+        new_health = health - int(message[2])
+        players[message[1]]['health'] = str(new_health)
+
+        # health cannot be less than 0
+        if int(players[message[1]]['health']) < 0:
+            players[message[1]]['health'] = '0'
 
     # send the response back to the client
     if data:
