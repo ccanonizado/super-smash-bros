@@ -242,6 +242,7 @@ while True:
         health = int(players[message[1]]['health'])
         new_health = health - int(message[2])
         players[message[1]]['health'] = str(new_health)
+        players[message[1]]['move'] = message[3]
 
         # health cannot be less than 0
         if int(players[message[1]]['health']) < 0:

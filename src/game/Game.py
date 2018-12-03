@@ -232,8 +232,8 @@ class Game:
             if player.vel.y > 0:
                 collision = pg.sprite.spritecollide(player, self.platforms, False)
                 if collision:
-                    player.pos.y = collision[0].rect.top + 1
-                    player.vel.y = 0
+                    player.pos[1] = collision[0].rect.top + 1
+                    player.vel[1] = 0
 
     # for consistently drawing the background and the sprites
     def draw(self):
