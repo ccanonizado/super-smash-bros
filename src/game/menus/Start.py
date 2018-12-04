@@ -186,7 +186,7 @@ class Start:
             pg.display.flip()
 
     def drawStats(self):
-        # see notes.txt
+        # see notes.txt in root folder
         mario = ['3', '6', '50']
         luigi = ['4', '8', '40']
         yoshi = ['5', '10', '30']

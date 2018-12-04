@@ -25,6 +25,9 @@ START_NO_NAME_BG = pg.image.load('./images/backgrounds/startNoName.png')
 START_CHARACTER_BG = pg.image.load('./images/backgrounds/startCharacter.png')
 START_WAITING_BG = pg.image.load('./images/backgrounds/startWaiting.png')
 
+#icon
+ICON = pg.image.load('./images/others/icon.png')
+
 '''
 
 Character sprites:

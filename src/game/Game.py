@@ -79,6 +79,7 @@ class Game:
         pg.init()
         pg.mixer.init()
         pg.display.set_caption(TITLE)
+        pg.display.set_icon(ICON)
 
         # game variables
         self.screen = pg.display.set_mode(BG_SIZE)
@@ -130,7 +131,7 @@ class Game:
             elif self.status == GAME:
                 self.getStatus()
                 # once initialized - continuously update players
-                if self.initialized:
+                if self.initialized and self.playing:
                     self.updatePlayer()
                     self.updateAllPlayers()
                 self.clock.tick(FPS)
@@ -285,6 +286,13 @@ class Game:
             # show all the sprites
             self.all_sprites.draw(self.screen)
 
+            # write the player's name on top of the sprite
+            font = pg.font.Font(None, 20)
+            for player in self.players.values():
+                coors = (player.rect.left, player.rect.top-10)
+                text_surface = font.render((player.name), True, WHITE)
+                self.screen.blit(text_surface, coors)
+
             # show end game results
             if self.alive_count <= 1 and not self.showed_end:
                 self.playing = False
@@ -330,7 +338,7 @@ class Game:
         i = 0        
         for player in self.players.values():
             name = player.name
-            stats = name + ' - ' + str(player.health)
+            stats = name + ' - ' + str(int(player.health))
             diff = 10 - len(player.name)
 
             # color text according to player's health
@@ -511,6 +519,9 @@ class Game:
                         player.direc = direc
                         player.walk_c = walk_c
                         player.move = move
+
+                    # FIX
+                    # self.playing = True
 
     def send(self, message):
         self.s.sendto(str.encode(message), SERVER)
