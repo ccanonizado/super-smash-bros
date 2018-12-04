@@ -34,9 +34,9 @@ class Link(pg.sprite.Sprite):
         self.move = move
 
         # character dependent
-        self.weak = 5
-        self.heavy = 10
-        self.acce = 0.5
+        self.weak = 6
+        self.heavy = 12
+        self.acce = 0.2
 
         self.game = game
         self.image = maS1

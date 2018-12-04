@@ -34,8 +34,8 @@ class Mario(pg.sprite.Sprite):
         self.move = move
 
         # character dependent
-        self.weak = 5
-        self.heavy = 10
+        self.weak = 3
+        self.heavy = 6
         self.acce = 0.5
 
         self.game = game

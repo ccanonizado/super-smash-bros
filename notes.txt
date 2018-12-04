@@ -1,29 +1,29 @@
 Mario
-W - 4
-H - 8
+W - 3
+H - 6
 S - 0.5
 
 Luigi
 W - 4
 H - 8
-S - 0.5
+S - 0.4
 
 Yoshi
-W - 
-H - 
-S -
-
-Nana
-W - 
-H - 
-S -
+W - 5
+H - 10
+S -0.3
 
 Popo
-W - 
-H - 
-S -
+W - 5.5
+H - 11
+S - 0.25
+
+Nana
+W - 5.75
+H - 11.5
+S - 0.225
 
 Link
-W - 
-H - 
-S -
+W - 6
+H - 12
+S - 0.2

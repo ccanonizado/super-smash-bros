@@ -34,9 +34,9 @@ class Popo(pg.sprite.Sprite):
         self.move = move
 
         # character dependent
-        self.weak = 5
-        self.heavy = 10
-        self.acce = 0.5
+        self.weak = 5.5
+        self.heavy = 11
+        self.acce = 0.25
 
         self.game = game
         self.image = maS1

@@ -36,7 +36,7 @@ class Yoshi(pg.sprite.Sprite):
         # character dependent
         self.weak = 5
         self.heavy = 10
-        self.acce = 0.5
+        self.acce = 0.3
 
         self.game = game
         self.image = maS1

@@ -380,7 +380,7 @@ class Game:
                             x = float(value['xPos'])
                             y = float(value['yPos'])
                             d = value['direc']
-                            h = int(value['health'])
+                            h = float(value['health'])
                             w = int(value['walk_c'])
                             m = value['move']
                             pos = [x, y]
@@ -421,7 +421,7 @@ class Game:
                         x = float(value['xPos'])
                         y = float(value['yPos'])
                         d = value['direc']
-                        h = int(value['health'])
+                        h = float(value['health'])
                         w = int(value['walk_c'])
                         m = value['move']
                         pos = [x, y]
@@ -498,7 +498,7 @@ class Game:
                     for player in self.players.values():
                         name = player.name
                         status = data[name]['status']
-                        health = int(data[name]['health'])
+                        health = float(data[name]['health'])
                         xPos = float(data[name]['xPos'])
                         yPos = float(data[name]['yPos'])
                         direc = data[name]['direc']

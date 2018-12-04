@@ -41,6 +41,7 @@ class Start:
                 self.g.screen.blit(START_NO_NAME_BG, ORIGIN)
             elif screen == 'character':
                 self.g.screen.blit(START_CHARACTER_BG, ORIGIN)
+                self.drawStats()
             elif screen == 'waiting':
                 self.g.screen.blit(START_WAITING_BG, ORIGIN)
 
@@ -183,3 +184,43 @@ class Start:
                 self.g.screen.blit(back.image, (back.x, back.y))
 
             pg.display.flip()
+
+    def drawStats(self):
+        # see notes.txt
+        mario = ['3', '6', '50']
+        luigi = ['4', '8', '40']
+        yoshi = ['5', '10', '30']
+        popo = ['5.5', '11', '25']
+        nana = ['5.7', '11', '22']
+        link = ['6', '12', '20']        
+        
+        font = pg.font.Font(None, 30)
+
+        for i in range(0, 6):
+            if i == 0:
+                x = 106
+                char = mario
+            elif i == 1:
+                x = 295
+                char = luigi
+            elif i == 2:
+                x = 470
+                char = yoshi
+            elif i == 3:
+                x = 648
+                char = popo
+            elif i == 4:
+                x = 824
+                char = nana
+            elif i == 5:
+                x = 1001
+                char = link
+            for j in range(0,3):
+                if j == 0:
+                    y = 581
+                elif j == 1:
+                    y = 606
+                elif j == 2:
+                    y = 631
+                text = font.render(char[j], True, WHITE)
+                self.g.screen.blit(text, (x, y))

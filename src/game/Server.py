@@ -87,7 +87,7 @@ import json
 import copy
 
 # server parameters
-HOST = 'localhost'
+HOST = '0.0.0.0'
 PORT = 10000
 BUFFER = 1024
 SERVER = (HOST, PORT)
@@ -266,13 +266,13 @@ while True:
         data = str.encode(data)
 
     elif action == 'ATTACK_PLAYER':
-        health = int(players[message[1]]['health'])
-        new_health = health - int(message[2])
+        health = float(players[message[1]]['health'])
+        new_health = health - float(message[2])
         players[message[1]]['health'] = str(new_health)
         players[message[1]]['move'] = message[3]
 
         # health cannot be less than 0
-        if int(players[message[1]]['health']) < 0:
+        if float(players[message[1]]['health']) < 0:
             players[message[1]]['health'] = '0'
 
     elif action == 'QUIT_GAME':
