@@ -78,7 +78,7 @@ class Mario(pg.sprite.Sprite):
 
         # block any movement if player pressed 'Enter' to chat
         if not self.game.chatting and self.curr_player == self.name:
-            if self.health > 0:
+            if self.health > 0 and self.game.playing:
                 if self.walk_c == 7:
                     self.walk_c = 0 
 

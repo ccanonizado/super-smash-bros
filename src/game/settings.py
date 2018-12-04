@@ -23,6 +23,7 @@ ABOUT = 2
 START = 3
 WAITING = 4
 GAME = 5
+QUIT = 6
 
 # characters
 MARIO = 'Mario'

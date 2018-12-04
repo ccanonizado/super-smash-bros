@@ -3,8 +3,7 @@ import sys
 import pygame as pg
 
 # add the path to the folder with the other images
-script_dir = sys.path[0]
-img_path = os.path.join(script_dir, 'images/others/')
+img_path = os.path.abspath(os.curdir) + '/images/others/'
 
 class Platform(pg.sprite.Sprite):
     def __init__(self, label, x, y, w, h):

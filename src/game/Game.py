@@ -10,11 +10,6 @@ Other classes used in this directory are:
 - Chat.py for the multiplayer chat using TCP
 - settings.py for all the configurations needed
 
-For ease of navigation search the following labels:
-"IMPORTANT METHODS" - game events and updates
-"SCREENS" - different game menus
-"OTHERS" - other methods such as sending to the server
-
 Check Server.py for proper usage of the API!
 
 '''
@@ -44,15 +39,21 @@ from characters.Popo import Popo
 from characters.Nana import Nana
 from characters.Link import Link
 
-# other objects
-from objects.Button import Button
-from objects.CharButton import CharButton
-from objects.ReadyButton import ReadyButton
+# menus
+from menus.Intro import Intro
+from menus.Other import Other
+from menus.Start import Start
+
+# others
 from objects.Platform import Platform
 from threading import Thread
 from settings import *
 from images import *
-from Chat import Chat
+
+try:
+    from Chat import Chat
+except:
+    print("You must install protobuf for python if you want to use chat!")
 
 # dependencies
 import pygame as pg
@@ -89,6 +90,8 @@ class Game:
         self.name_available = True
         self.player_count = 0
         self.curr_player = ''
+        self.showed_end = False
+        self.restart_request = False
 
         # converted background images for optimized game loop
         self.arena_bg = ARENA_BG.convert()
@@ -110,23 +113,22 @@ class Game:
         self.game_thread.start()
 
     def run(self):
-        self.playing = True
-
         # check for the current menu depending on the status
-        while self.playing:
+        while True:
             if self.status == INTRO:
-                self.intro_menu()
+                Intro(self)
 
             elif self.status == START:
-                self.start_menu()
+                Start(self)
 
             elif self.status == GUIDE:
-                self.other_menu(GUIDE, GUIDE_BG)
+                Other(self, GUIDE, GUIDE_BG)
 
             elif self.status == ABOUT:
-                self.other_menu(ABOUT, ABOUT_BG)
+                Other(self, ABOUT, ABOUT_BG)
 
             elif self.status == GAME:
+                self.getStatus()
                 # once initialized - continuously update players
                 if self.initialized:
                     self.updatePlayer()
@@ -144,6 +146,10 @@ class Game:
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
 
+        self.loadPlatforms()
+        self.run()
+
+    def loadPlatforms(self):
         base = Platform('floor', 0, HEIGHT-30, GAME_WIDTH, 30)
         self.all_sprites.add(base)
         self.platforms.add(base)
@@ -160,105 +166,158 @@ class Game:
         self.all_sprites.add(plat3)
         self.platforms.add(plat3)
 
-        self.run()
-
     def events(self):
-        keys = pg.key.get_pressed()
+        try:
+            if self.restart_request:
+                self.restartGame()
 
-        # once player enters game screen - show initial chat
-        if not self.chat_init:
-            self.chat_text = '<Enter> disables movement!'
-            self.chat_init = True
+            keys = pg.key.get_pressed()
 
-        for event in pg.event.get():
-            # check for closing window
-            if event.type == pg.QUIT:
-                self.running = False
-                if self.playing:
-                    self.playing = False
-                quit()
+            # once player enters game screen - show initial chat
+            if not self.chat_init:
+                self.chat_text = '<Enter> disables movement!'
+                self.chat_init = True
 
-            # majority of chat flow
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_z:
-                    self.players[self.curr_player].weakAttack()
+            for event in pg.event.get():
+                # check for closing window
+                if event.type == pg.QUIT:
+                    self.running = False
+                    if self.playing:
+                        self.playing = False
+                    quit()
 
-                elif event.key == pg.K_x:
-                    self.players[self.curr_player].heavyAttack()
+                # majority of chat flow + attacks
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_z:
+                        self.players[self.curr_player].weakAttack()
 
-                if event.key == pg.K_RETURN:
-                    if not self.chatting:
-                        self.chatting = True
+                    elif event.key == pg.K_x:
+                        self.players[self.curr_player].heavyAttack()
 
-                        # first enter will replace default text
-                        self.chat_once = True
-                        self.chat_text = 'Type here!'
+                    if event.key == pg.K_RETURN:
+                        if not self.chatting:
+                            self.chatting = True
 
-                    elif self.chatting:
-                        self.chatting = False
+                            # first enter will replace default text
+                            self.chat_once = True
+                            self.chat_text = 'Type here!'
 
-                        # send message to server and replace with default text
-                        try:
-                            self.chat.chatInLobby(self.chat_text)
-                        except:
-                            self.chat_messages.append('CHAT ERROR! Server might be down!')
-                            print('CHAT ERROR! Server might be down!')
-                        self.chat_text = '<Enter> disables movement!'
+                        elif self.chatting:
+                            self.chatting = False
 
-                elif event.key == pg.K_BACKSPACE:
-                   
-                    # self.chat_once just clears 'Type here!' after initial type
-                    if self.chatting:
-                        if self.chat_once:
-                            self.chat_once = False
-                            self.chat_text = ''
-                        else:
-                            self.chat_text = self.chat_text[:-1]
-                else:
-                    if self.chatting:
-                        if self.chat_once:
-                            self.chat_once = False
-                            self.chat_text = ''
-                        
-                        # maximum message length is 22 to fit the screen
-                        if len(self.chat_text) <= 22:
-                            char = event.unicode
-                            self.chat_text += char
+                            # send message to server and replace with default text
+                            try:
+                                self.chat.chatInLobby(self.chat_text)
+                            except:
+                                self.chat_messages.append('CHAT ERROR! Server might be down!')
+                                print('CHAT ERROR! Server might be down!')
+                            self.chat_text = '<Enter> disables movement!'
+
+                    elif event.key == pg.K_F1:
+                        if self.showed_end:
+                            if not self.restart_request:
+                                self.restartRequest()
+                                self.restart_request = True
+                                self.chat_messages.append('You sent a restart request!')
+
+                    elif event.key == pg.K_ESCAPE:
+                        if self.showed_end:
+                            self.quitGame()
+
+                    else:
+                        if self.chatting:
+                            if self.chat_once:
+                                self.chat_once = False
+                                self.chat_text = ''
+                            
+                            # maximum message length is 22 to fit the screen
+                            if len(self.chat_text) <= 22:
+                                char = event.unicode
+                                self.chat_text += char
+
+            if keys[pg.K_BACKSPACE]:
+                
+                # self.chat_once just clears 'Type here!' after initial type
+                if self.chatting:
+                    if self.chat_once:
+                        self.chat_once = False
+                        self.chat_text = ''
+                    else:
+                        self.chat_text = self.chat_text[:-1]
+        
+        except:
+            quit()
 
     def update(self):
-        self.all_sprites.update()
+        try:
+            self.all_sprites.update()
 
-        for player in self.players.values():
-            if player.vel.y > 0:
-                collision = pg.sprite.spritecollide(player, self.platforms, False)
-                if collision:
-                    player.pos[1] = collision[0].rect.top + 1
-                    player.vel[1] = 0
+            # check for collision
+            for player in self.players.values():
+                if player.vel.y > 0:
+                    collision = pg.sprite.spritecollide(player, self.platforms, False)
+                    if collision:
+                        player.pos[1] = collision[0].rect.top + 1
+                        player.vel[1] = 0
+
+            # check for end game
+            self.alive_count = len(self.players)
+            self.ap = ''
+            for player in self.players.values():
+                if player.health == 0:
+                    self.alive_count -= 1
+                else:
+                    self.ap = player.name
+        
+        except:
+            quit()
 
     # for consistently drawing the background and the sprites
     def draw(self):
-        # show the background
-        self.screen.blit(self.arena_bg, ORIGIN)
-        self.screen.blit(self.chat_bg, (700,0))
-        
-        # check method below
-        self.drawStatsBoard()
-        
-        # show all the sprites
-        self.all_sprites.draw(self.screen)
-        
-        # show the input chat
-        font = pg.font.Font(None, 30)
-        text_surface = font.render(self.chat_text, True, WHITE)
-        self.screen.blit(text_surface, (760,644))
+        try:
+            # show the background
+            self.screen.blit(self.arena_bg, ORIGIN)
+            self.screen.blit(self.chat_bg, (700,0))
+            
+            # check method below
+            self.drawStatsBoard()
+            
+            # show all the sprites
+            self.all_sprites.draw(self.screen)
 
-        # show all the messages
-        font2 = pg.font.Font(None, 24)
-        for i in range(0,len(self.chat_messages)):
-            text_surface2 = font2.render(self.chat_messages[i], True, BLACK)
-            self.screen.blit(text_surface2, (730,95+(i*25)))
+            # show end game results
+            if self.alive_count <= 1 and not self.showed_end:
+                self.playing = False
 
-        pg.display.flip()
+                self.chat_messages = []
+                self.chat_messages.append('===== {} won this round! ====='.format(self.ap))
+                self.chat_messages.append("-> Press F1 to restart the game")
+                self.chat_messages.append('   * Everyone must press F1 to restart')
+                self.chat_messages.append('-> Press Esc to exit the game')
+                self.chat_messages.append('   * Recreating is not supported for now')
+                self.chat_messages.append('   * If you want to recreate a game:')
+                self.chat_messages.append('     1. Restart Server.py')
+                self.chat_messages.append('     2. Run Game.py <ip_address> again')
+                self.chat_messages.append('! ENJOY, you may still chat !')
+                self.chat_messages.append('======================================')
+
+                self.showed_end = True
+
+            # show the input chat
+            font = pg.font.Font(None, 30)
+            text_surface = font.render(self.chat_text, True, WHITE)
+            self.screen.blit(text_surface, (760,644))
+
+            # show all the messages
+            font2 = pg.font.Font(None, 24)
+            for i in range(0,len(self.chat_messages)):
+                text_surface2 = font2.render(self.chat_messages[i], True, BLACK)
+                self.screen.blit(text_surface2, (730,95+(i*25)))
+
+            pg.display.flip()
+        
+        except:
+            quit()
 
     # board with the players' name and life
     def drawStatsBoard(self):
@@ -287,242 +346,7 @@ class Game:
             self.screen.blit(text, (12+(diff*5),40+(i*30)))
             i += 1
 
-    # ========================= SCREENS =========================
-
-    def intro_menu(self):
-        start = Button('start', 400, 275, 300, 100)
-        guide = Button('guide', 400, 400, 300, 100)
-        about = Button('about', 400, 525, 300, 100)
-
-        while self.status == INTRO:
-            self.screen.blit(INTRO_BG, ORIGIN)
-
-            for event in pg.event.get():
-                pos = pg.mouse.get_pos()
-
-                if event.type == pg.QUIT:
-                    self.running = False
-                    if self.playing:
-                        self.playing = False
-                    quit()
-                
-                if event.type == pg.MOUSEBUTTONDOWN:
-                    if start.isOver(pos):
-                        self.status = START
-                        break
-                    elif guide.isOver(pos):
-                        self.status = GUIDE
-                        break
-                    elif about.isOver(pos):
-                        self.status = ABOUT
-                        break
-
-                if event.type == pg.MOUSEMOTION:
-                    start.isOver(pos)
-                    guide.isOver(pos)
-                    about.isOver(pos)
-
-            self.screen.blit(start.image, (start.x, start.y))
-            self.screen.blit(guide.image, (guide.x, guide.y))
-            self.screen.blit(about.image, (about.x, about.y))
-
-            pg.display.flip()
-
-    # guide or about menu
-    def other_menu(self, flag, bg):
-        back = Button('back', 20, 20, 100, 100)
-
-        while self.status == flag:
-            self.screen.blit(bg, ORIGIN)
-
-            for event in pg.event.get():
-                pos = pg.mouse.get_pos()
-
-                if event.type == pg.QUIT:
-                    self.running = False
-                    if self.playing:
-                        self.playing = False
-                    quit()
-                
-                if event.type == pg.MOUSEBUTTONDOWN:
-                    if back.isOver(pos):
-                        self.status = INTRO
-                        break
-
-                if event.type == pg.MOUSEMOTION:
-                    back.isOver(pos)
-
-            self.screen.blit(back.image, (back.x, back.y))
-
-            pg.display.flip()
-
-    # this menu includes the name input - character select - ready screen
-    def start_menu(self):
-        back = Button('back', 20, 20, 100, 100)
-        ready = ReadyButton('ready', 400, 560, 300, 100)
-        mario = CharButton('mario', 25, 210, 150, 350)
-        luigi = CharButton('luigi', 210, 210, 150, 350)
-        yoshi = CharButton('yoshi', 390, 210, 150, 350)
-        popo = CharButton('popo', 575, 210, 150, 350)
-        nana = CharButton('nana', 750, 210, 150, 350)
-        link = CharButton('link', 920, 210, 150, 350)
-
-        font = pg.font.Font(None, 100)
-        screen = 'name'
-
-        old_name = ''
-        enteredName = False
-        playerReady = False
-
-        while self.status == START:
-
-            # repeatedly check if the name is available
-            self.checkName(self.curr_player)
-
-            if screen == 'name':
-                self.screen.blit(START_NAME_BG, ORIGIN)
-            elif screen == 'no_name':
-                self.screen.blit(START_NO_NAME_BG, ORIGIN)
-            elif screen == 'character':
-                self.screen.blit(START_CHARACTER_BG, ORIGIN)
-            elif screen == 'waiting':
-                self.screen.blit(START_WAITING_BG, ORIGIN)
-
-            if screen == 'name' or screen == 'no_name':
-                if not self.name_available:
-                    if self.curr_player != old_name: 
-                        self.screen.blit(START_NAME_EXISTS_BG, ORIGIN)
-
-                text_surface = font.render(self.curr_player, True, WHITE)
-                self.screen.blit(text_surface, (355,355))
-            
-            for event in pg.event.get():
-                pos = pg.mouse.get_pos()
-
-                if event.type == pg.QUIT:
-                    self.running = False
-                    if self.playing:
-                        self.playing = False
-                    if enteredName:
-                        self.disconnectPlayer(self.curr_player)
-                    quit()
-                
-                if event.type == pg.MOUSEBUTTONDOWN:
-                    if back.isOver(pos) and not playerReady: 
-                        if screen == 'name':
-                            self.status = INTRO
-                            if enteredName:
-                                self.disconnectPlayer(self.curr_player)
-                            break
-                        elif screen == 'no_name':
-                            self.status = INTRO
-                            if enteredName:
-                                self.disconnectPlayer(self.curr_player)
-                            break
-                        elif screen == 'character':
-                            screen = 'name'
-                        elif screen == 'waiting':
-                            screen = 'character'
-
-                    if screen == 'character':
-                        if mario.isOver(pos, 'mario'):
-                            self.editPlayerCharacter(self.curr_player, MARIO)
-                            screen = 'waiting'
-                        elif luigi.isOver(pos, 'luigi'):
-                            self.editPlayerCharacter(self.curr_player, LUIGI)
-                            screen = 'waiting'
-                        elif yoshi.isOver(pos, 'yoshi'):
-                            self.editPlayerCharacter(self.curr_player, YOSHI)
-                            screen = 'waiting'
-                        elif popo.isOver(pos, 'popo'):
-                            self.editPlayerCharacter(self.curr_player, POPO)
-                            screen = 'waiting'
-                        elif nana.isOver(pos, 'nana'):
-                            self.editPlayerCharacter(self.curr_player, NANA)
-                            screen = 'waiting'
-                        elif link.isOver(pos, 'link'):
-                            self.editPlayerCharacter(self.curr_player, LINK)
-                            screen = 'waiting'
-
-                    if screen == 'waiting':
-                        if ready.isOver(pos):
-                            if ready.clicked:
-                                self.editPlayerStatus(self.curr_player, 'unready')
-                                playerReady = False
-                                ready.click()
-                            else:
-                                self.editPlayerStatus(self.curr_player, 'ready')
-                                playerReady = True
-                                ready.click()
-
-                if event.type == pg.MOUSEMOTION:
-                    back.isOver(pos)
-                    if screen == 'character':
-                        mario.isOver(pos, 'mario')
-                        luigi.isOver(pos, 'luigi')
-                        yoshi.isOver(pos, 'yoshi')
-                        popo.isOver(pos, 'popo')
-                        nana.isOver(pos, 'nana')
-                        link.isOver(pos, 'link')
-                    if screen == 'waiting':
-                        ready.isOver(pos)
-
-                if event.type == pg.KEYDOWN:
-                    if screen == 'name' or screen == 'no_name' or screen == 'waiting':
-                        if event.key == pg.K_RETURN:
-                            if screen != 'waiting':
-                                if len(self.curr_player) == 0:
-                                    screen = 'no_name'
-                                    print("INVALID NAME! Your name cannot be blank!")
-                                else:
-                                    if self.name_available or self.curr_player == old_name:
-                                        screen = 'character'
-                                        if not enteredName:
-                                            enteredName = True
-                                            old_name = self.curr_player
-                                            self.connectPlayer(self.curr_player)
-                                        elif enteredName:
-                                            self.editPlayerName(old_name, self.curr_player)
-                                            old_name = self.curr_player
-                                    elif not self.name_available:
-                                        print("NAME EXISTS! Enter a unique one!")
-                            else:
-                                # initialize chat to create lobby
-                                self.chat = Chat(self)
-                                lobby_id = self.chat.createLobby(6).lobby_id
-                                self.createChatLobby(lobby_id)
-
-                                self.startGame()
-
-                        elif event.key == pg.K_BACKSPACE:
-                            self.curr_player = self.curr_player[:-1]
-                        else:
-                            # limit character length for the screen
-                            if len(self.curr_player) < 10:
-                                char = event.unicode
-                                self.curr_player += char
-
-            if screen == 'character':
-                self.screen.blit(mario.image, (mario.x, mario.y))
-                self.screen.blit(luigi.image, (luigi.x, luigi.y))
-                self.screen.blit(yoshi.image, (yoshi.x, yoshi.y))
-                self.screen.blit(popo.image, (popo.x, popo.y))
-                self.screen.blit(nana.image, (nana.x, nana.y))
-                self.screen.blit(link.image, (link.x, link.y))
-
-            elif screen == 'waiting':
-                self.getPlayersReadyCount()
-                self.screen.blit(ready.image, (ready.x, ready.y))
-                text_surface = font.render(str(self.player_count), True, WHITE)
-                self.screen.blit(text_surface,(700,440))
-                self.joinGame()
-
-            if not playerReady:
-                self.screen.blit(back.image, (back.x, back.y))
-
-            pg.display.flip()
-
-    # ========================= OTHERS =========================
+    # ========================= DATA TO AND FROM SERVER =========================
     def receive(self):
         while self.running:
             data, address = self.s.recvfrom(BUFFER)
@@ -549,7 +373,7 @@ class Game:
                         message.pop(0)
                         message = ' '.join(message)
                         data = json.loads(message)
-
+                        
                         self.players = {}
                         for key, value in data.items():
                             n = key
@@ -582,9 +406,59 @@ class Game:
                                 self.enemy_sprites.add(player)
                         self.initialized = True
 
+                elif action == 'RESTART_GAME':
+                    message.pop(0)
+                    message = ' '.join(message)
+                    data = json.loads(message)
+
+                    self.players = {}
+                    self.enemy_sprites = pg.sprite.Group()
+                    self.all_sprites = pg.sprite.Group()
+                    self.platforms = pg.sprite.Group()
+                    self.loadPlatforms()
+                    for key, value in data.items():
+                        n = key
+                        x = float(value['xPos'])
+                        y = float(value['yPos'])
+                        d = value['direc']
+                        h = int(value['health'])
+                        w = int(value['walk_c'])
+                        m = value['move']
+                        pos = [x, y]
+                        char = value['character']
+                        a = 'alive'
+
+                        if char == MARIO:
+                            player = Mario(self, self.curr_player, n, a, h, pos, d, w, m)
+                        elif char == LUIGI:
+                            player = Luigi(self, self.curr_player, n, a, h, pos, d, w, m)
+                        elif char == YOSHI:
+                            player = Yoshi(self, self.curr_player, n, a, h, pos, d, w, m)
+                        elif char == POPO:
+                            player = Popo(self, self.curr_player, n, a, h, pos, d, w, m)
+                        elif char == NANA:
+                            player = Nana(self, self.curr_player, n, a, h, pos, d, w, m)
+                        elif char == LINK:
+                            player = Link(self, self.curr_player, n, a, h, pos, d, w, m)
+
+                        self.players[n] = player
+                        self.all_sprites.add(player)
+                        if self.curr_player != n:
+                            self.enemy_sprites.add(player)
+
+                    self.showed_end = False
+                    self.chat_messages = []
+                    self.chat_messages.append('=========== GAME RESTART ===========')
+                    self.chat_messages.append('Best of luck - may the best player win!')
+                    self.chat_messages.append('======================================')
+                    self.playing = True
+                    self.status = GAME
+                    self.restart_request = False
+
                 # check if game has started - if it has started - join
                 elif action == 'JOIN_GAME':
                     if int(message[1]) == GAME:
+                        self.playing = True
                         self.startGame()
                         self.status = GAME                        
                         self.joinChatLobby()
@@ -602,6 +476,19 @@ class Game:
                             self.chat_messages.append('CHAT ERROR! Server might be down!')
                             print('CHAT ERROR! Server might be down!')
                         self.created_chat = True
+
+                elif action == 'QUIT_GAME':
+                    print("Thank you for playing!")
+                    self.running = False
+                    pg.quit()
+                    quit()
+
+                elif action == 'GET_STATUS':
+                    if int(message[1]) == QUIT:
+                        print("Thank you for playing!")
+                        self.running = False
+                        pg.quit()
+                        quit()
 
                 elif action == 'UPDATE_ALL_PLAYERS':
                     message.pop(0)
@@ -666,6 +553,14 @@ class Game:
         message = 'START_GAME'
         self.send(message)
 
+    def restartRequest(self):
+        message = 'RESTART_REQUEST'
+        self.send(message)
+
+    def restartGame(self):
+        message = 'RESTART_GAME'
+        self.send(message)
+
     def joinGame(self):
         message = 'JOIN_GAME'
         self.send(message)
@@ -704,10 +599,16 @@ class Game:
         message = 'UPDATE_ALL_PLAYERS'
         self.send(message)
 
+    def quitGame(self):
+        message = 'QUIT_GAME'
+        self.send(message)
+
+    def getStatus(self):
+        message ='GET_STATUS'
+        self.send(message)
+
 # main start of the program
 game = Game()
 
 while game.running:
     game.new()
-
-pg.quit()

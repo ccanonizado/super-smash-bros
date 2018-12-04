@@ -3,8 +3,7 @@ import sys
 import pygame as pg
 
 # add the path to the folder with the button images
-script_dir = sys.path[0]
-img_path = os.path.join(script_dir, 'images/buttons/')
+img_path = os.path.abspath(os.curdir) + '/images/buttons/'
 
 class Button:
     def __init__(self, label, x, y, w, h):

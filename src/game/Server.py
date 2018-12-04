@@ -47,6 +47,15 @@ UPDATE_ALL_PLAYERS
 ATTACK_PLAYER <player> <damage>
 - player is being attacked with N damage
 
+RESTART_REQUEST
+- one player wants to restart the game
+
+RESTART_GAME
+- if everyone wants to restart the game - it will be reset
+
+QUIT_GAME
+- if one player presses Esc - everyone disconnects
+
 ======================================================================
 
 NOTE - for reference
@@ -75,6 +84,7 @@ dead
 from settings import *
 import socket
 import json
+import copy
 
 # server parameters
 HOST = 'localhost'
@@ -87,6 +97,8 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(SERVER)
 
 players = {}
+init_players = {}
+restart_count = 0
 players_ready = 0
 game = WAITING
 chat_lobby = 0
@@ -195,7 +207,21 @@ while True:
                     player['direc'] = 'left'
                 i += 1
 
+            init_players = copy.deepcopy(players)
             data += json.dumps(players)
+            data = str.encode(data)
+            game = GAME
+
+    elif action == 'RESTART_REQUEST':
+        restart_count += 1
+
+    elif action == 'RESTART_GAME':
+        data = 'NONE'
+        data = str.encode(data)
+        if (restart_count % len(players)) == 0:
+            players = copy.deepcopy(init_players)
+            data = 'RESTART_GAME '
+            data += json.dumps(init_players)
             data = str.encode(data)
             game = GAME
     
@@ -207,6 +233,7 @@ while True:
     elif action == 'CREATE_CHAT':
         chat_lobby = message[1]
         print("Created chat lobby: {}".format(message[1]))
+        print("Players joined the lobby!")
 
     elif action == 'JOIN_CHAT':
         data = 'JOIN_CHAT '
@@ -247,6 +274,17 @@ while True:
         # health cannot be less than 0
         if int(players[message[1]]['health']) < 0:
             players[message[1]]['health'] = '0'
+
+    elif action == 'QUIT_GAME':
+        print('One player quit! Reset the server if you want to play again.')
+        data = 'QUIT_GAME'
+        game = QUIT
+        data = str.encode(data)
+
+    elif action == 'GET_STATUS':
+        data = 'GET_STATUS '
+        data += str(game)
+        data = str.encode(data)
 
     # send the response back to the client
     if data:

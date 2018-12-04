@@ -1,0 +1,29 @@
+Mario
+W - 4
+H - 8
+S - 0.5
+
+Luigi
+W - 4
+H - 8
+S - 0.5
+
+Yoshi
+W - 
+H - 
+S -
+
+Nana
+W - 
+H - 
+S -
+
+Popo
+W - 
+H - 
+S -
+
+Link
+W - 
+H - 
+S -

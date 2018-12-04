@@ -6,12 +6,10 @@ A similar class has been made for optimization of the character selection screen
 '''
 
 import os
-import sys
 import pygame as pg
 
 # add the path to the folder with the button images
-script_dir = sys.path[0]
-img_path = os.path.join(script_dir, 'images/buttons/')
+img_path = os.path.abspath(os.curdir) + '/images/buttons/'
 
 marioa = pg.image.load(img_path+'marioa.png') 
 mariob = pg.image.load(img_path+'mariob.png')

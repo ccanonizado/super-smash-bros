@@ -8,6 +8,8 @@ If the label does not exist for your new value, just create a new one.
 '''
 
 import pygame as pg
+import os
+os.chdir("..")
 
 # other backgrounds
 INTRO_BG = pg.image.load('./images/backgrounds/intro.png')
