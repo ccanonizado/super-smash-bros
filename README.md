@@ -3,11 +3,11 @@
 CMSC 137 project made in Python and developed by:
 * Carlos Miguel Canonizado
 * Francheska Marie Pelaez Semilla
-* Shane Serrano
+* Shane Carla Serrano
 
 ## Play!
 
-The game is *currently in development* but in order to run, clone or download this repository then go to the **src/game/** directory. Once there, you may execute the program:
+To play, clone or download this repository and then go to the **/src/game** directory. Once there, you can follow this:
 
 ```
 # Remember to use python3!
@@ -32,22 +32,34 @@ If you run it without errors, this should be the output:
 
 **Note - you only need one server at a time!**
 
-### Game (client)
+### Client (game)
 ![alt text](./github/intro.png "Super Smash Bros")
 
 ## More Screenshots
+
+### Tutorial for your reference :)
+![alt text](./github/guide.png "Guide")
+
+### CMSC 137 CD-1L the best!
+![alt text](./github/about.png "About")
+
+### Name input (checks if unique)
 ![alt text](./github/name.png "Name")
+
+### Character selection (stats vary)
 ![alt text](./github/character.png "Character")
+
+### To start - ready players must be == players connected
 ![alt text](./github/ready.png "Ready")
+
+### Sample arena with chat screen
 ![alt text](./github/arena.png "Arena")
 
-## Next Version(s)
+## Next Version
 
-* Player attacks
-* End game detection
-* Updated guide menu
-* Updated about menu
-* Background music
+* Add background music
+* Improve restart game
+* Improve sprites
 
 ## References
 
