@@ -4,6 +4,8 @@ Here is the API for the server:
 
 ======================================================================
 
+NOTE - first string is always the action (next fields are optional)
+
 CONNECT <name>
 - connects player to game
 
@@ -32,13 +34,13 @@ START_GAME
 JOIN_GAME
 - repeatedly attempts to join game if it has started
 
-CREATE_CHAT
+CREATE_CHAT <lobby_id>
 - creates a chat lobby given the number of players in the game
 
 JOIN_CHAT
 - joins existing lobby from CREATE_CHAT
 
-UPDATE_PLAYER
+UPDATE_PLAYER <player>
 - repeatedly updates status, health, and position of one player
 
 UPDATE_ALL_PLAYERS
@@ -55,6 +57,9 @@ RESTART_GAME
 
 QUIT_GAME
 - if one player presses Esc - everyone disconnects
+
+GET_STATUS
+- returns current status of the game
 
 ======================================================================
 
@@ -96,12 +101,12 @@ SERVER = (HOST, PORT)
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(SERVER)
 
-players = {}
-init_players = {}
-restart_count = 0
-players_ready = 0
-game = WAITING
-chat_lobby = 0
+players = {} # players dict with attributes
+init_players = {} # copy of initial players (for restarting)
+players_ready = 0 # must be equal to len(players) to start
+restart_count = 0 # must be equal to len(players) to restart
+chat_lobby = 0 # lobby_id to be broadcasted to everyone
+game_status = WAITING # check settings.py for all game statuses
 
 print('Server is now up and running!')
 print('There must be 3-6 players ready before starting the game.')
@@ -114,7 +119,7 @@ while True:
     data, address = s.recvfrom(BUFFER)
 
     message = data.decode().split()
-    action = message[0]
+    action = message[0] # first message is the action
 
     # add player to player list and add initial character values
     if action == 'CONNECT':
@@ -158,7 +163,7 @@ while True:
         print('{} picked {}'.format(message[1], message[2]))
         players[message[1]]['character'] = message[2]
 
-    # change value of the status (check API for more)
+    # change value of the player's status (check API for more)
     elif action == 'EDIT_STATUS':
         print('{} is now {}'.format(message[1], message[2]))
         players[message[1]]['status'] = message[2]
@@ -174,13 +179,15 @@ while True:
         data += str(players_ready)
         data = str.encode(data)
 
+    # check line 184 for the condition for the game to start
     elif action == 'START_GAME':
-        if players_ready >= 1 and players_ready <= 6:
+        if players_ready == len(players) and len(players) >= 1:
             data = 'START_GAME '
+            
             i = 0
-
             for player in players.values():
                 # these x and y values are hardcoded depending on the amount of players
+                # for positioning them correctly in the game arena
                 if i == 0:
                     player['xPos'] = '157'
                     player['yPos'] = '0'
@@ -207,41 +214,53 @@ while True:
                     player['direc'] = 'left'
                 i += 1
 
+            # create a copy of initial players if ever they want to request
             init_players = copy.deepcopy(players)
+
             data += json.dumps(players)
             data = str.encode(data)
-            game = GAME
+            game_status = GAME
 
+    # increment restart_count
     elif action == 'RESTART_REQUEST':
         restart_count += 1
 
+    # repeatedly send at the end of the game
     elif action == 'RESTART_GAME':
+        # action must be NONE if condition is not satisfied (line 233)
         data = 'NONE'
         data = str.encode(data)
         if (restart_count % len(players)) == 0:
+
+            # replace current players with the initial ones
             players = copy.deepcopy(init_players)
+
             data = 'RESTART_GAME '
             data += json.dumps(init_players)
             data = str.encode(data)
-            game = GAME
+            game_status = GAME
     
+    # simply returns game status - client will evaluate
     elif action == 'JOIN_GAME':
         data = 'JOIN_GAME '
-        data += str(game)
+        data += str(game_status)
         data = str.encode(data)
 
+    # chat lobby is created in client and passed here
     elif action == 'CREATE_CHAT':
         chat_lobby = message[1]
         print("Created chat lobby: {}".format(message[1]))
         print("Players joined the lobby!")
 
+    # if lobby is created - server broadcasts lobby_id
     elif action == 'JOIN_CHAT':
         data = 'JOIN_CHAT '
         data += str(chat_lobby)
         data = str.encode(data)
 
+    # update single player
     elif action == 'UPDATE_PLAYER':
-        message.pop(0)
+        message.pop(0) # remove action
         message = ' '.join(message)
         payload = json.loads(message)
 
@@ -260,11 +279,13 @@ while True:
         players[name]['walk_c'] = walk_c
         players[name]['move'] = move
     
+    # broadcast all player updates
     elif action == 'UPDATE_ALL_PLAYERS':
         data = 'UPDATE_ALL_PLAYERS '
         data += json.dumps(players)
         data = str.encode(data)
 
+    # similar to update player but for decreasing the health
     elif action == 'ATTACK_PLAYER':
         health = float(players[message[1]]['health'])
         new_health = health - float(message[2])
@@ -275,15 +296,17 @@ while True:
         if float(players[message[1]]['health']) < 0:
             players[message[1]]['health'] = '0'
 
+    # changes game status to QUIT
     elif action == 'QUIT_GAME':
         print('One player quit! Reset the server if you want to play again.')
         data = 'QUIT_GAME'
-        game = QUIT
         data = str.encode(data)
+        game_status = QUIT
 
+    # consistently returns the game status
     elif action == 'GET_STATUS':
         data = 'GET_STATUS '
-        data += str(game)
+        data += str(game_status)
         data = str.encode(data)
 
     # send the response back to the client

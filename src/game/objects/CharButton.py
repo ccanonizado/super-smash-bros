@@ -11,6 +11,7 @@ import pygame as pg
 # add the path to the folder with the button images
 img_path = os.path.abspath(os.curdir) + '/images/buttons/'
 
+# preloaded images
 marioa = pg.image.load(img_path+'marioa.png') 
 mariob = pg.image.load(img_path+'mariob.png')
 luigia = pg.image.load(img_path+'luigia.png')

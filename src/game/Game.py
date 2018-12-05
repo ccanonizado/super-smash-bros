@@ -4,13 +4,15 @@ This is the main game file!
 
 All the other classes are distributed in the different directories:
 - /src/game/characters/ - Player.py and all other Character.pys
-- /src/game/objects/ - Base.py, Button.py, and Platform.py
+- /src/game/objects/ - Button.py, CharButton.py, ReadyButton.py, and Platform.py
+- /src/game/menus/ - Intro.py, Other.py, and Start.py
 
 Other classes used in this directory are:
 - Chat.py for the multiplayer chat using TCP
 - settings.py for all the configurations needed
+- images.py for all the photos imported
 
-Check Server.py for proper usage of the API!
+NOTE - Check Server.py for proper usage of the API!
 
 '''
 
@@ -564,14 +566,6 @@ class Game:
         message = 'START_GAME'
         self.send(message)
 
-    def restartRequest(self):
-        message = 'RESTART_REQUEST'
-        self.send(message)
-
-    def restartGame(self):
-        message = 'RESTART_GAME'
-        self.send(message)
-
     def joinGame(self):
         message = 'JOIN_GAME'
         self.send(message)
@@ -583,11 +577,6 @@ class Game:
 
     def joinChatLobby(self):
         message = 'JOIN_CHAT'
-        self.send(message)
-
-    def attackPlayer(self, player, damage, move):
-        message = 'ATTACK_PLAYER '
-        message += player + ' ' + str(damage) + ' ' + move
         self.send(message)
  
     def updatePlayer(self):
@@ -610,13 +599,26 @@ class Game:
         message = 'UPDATE_ALL_PLAYERS'
         self.send(message)
 
+    def attackPlayer(self, player, damage, move):
+        message = 'ATTACK_PLAYER '
+        message += player + ' ' + str(damage) + ' ' + move
+        self.send(message)
+
+    def restartRequest(self):
+        message = 'RESTART_REQUEST'
+        self.send(message)
+
+    def restartGame(self):
+        message = 'RESTART_GAME'
+        self.send(message)
+
     def quitGame(self):
         message = 'QUIT_GAME'
         self.send(message)
 
     def getStatus(self):
         message ='GET_STATUS'
-        self.send(message)
+        self.send(message)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 
 # main start of the program
 game = Game()

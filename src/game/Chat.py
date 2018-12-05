@@ -26,7 +26,7 @@ class Chat:
 		self.packet = packet
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-		# connect to server
+		# connect socket
 		self.s.connect((HOST,PORT))
 
 	# to be executed in a thread after connectToLobby
@@ -45,11 +45,11 @@ class Chat:
 			
 			# self.g.chat_messages -> list from Game.py
 			elif(self.packet.type == self.packet.DISCONNECT):
-				disconnect = self.packet.DisconnectPacket()
-				disconnect.ParseFromString(data)
+				disc = self.packet.DisconnectPacket()
+				disc.ParseFromString(data)
 				if(len(self.g.chat_messages) == 20):
 					self.g.chat_messages.pop(0)
-				self.g.chat_messages.append('{} has disconnected!'.format(disconnect.player.name))
+				self.g.chat_messages.append('{} has disconnected!'.format(disc.player.name))
 
 	# for moularization
 	def sendAndReceive(self, packet):

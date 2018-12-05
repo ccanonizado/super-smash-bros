@@ -7,6 +7,7 @@ from objects.Button import Button
 from settings import *
 from images import *
 
+# this can either be the guide or about menu
 class Other:
     def __init__(self, game, flag, bg):
         self.game = game
@@ -24,11 +25,13 @@ class Other:
                     self.game.running = False
                     quit()
                 
+                # mouse click
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if back.isOver(pos):
                         self.game.status = INTRO
                         break
 
+                # mouse hover
                 if event.type == pg.MOUSEMOTION:
                     back.isOver(pos)
 

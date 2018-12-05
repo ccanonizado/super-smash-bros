@@ -45,11 +45,11 @@ HEAVY_ATTACK = 'heavy'
 DAMAGED = 'damaged'
 DEAD = 'dead'
 
-# player movement settings
+# player movement values
 FRIC = -0.12
 VEL = 15
 
-# color settings
+# colors
 BLACK = (0, 0, 0)
 RED = (153, 38, 0)
 GREEN = (40, 77, 0)

@@ -1,10 +1,10 @@
 import os
-import sys
 import pygame as pg
 
 # add the path to the folder with the other images
 img_path = os.path.abspath(os.curdir) + '/images/others/'
 
+# platform may either be a floating one or the base
 class Platform(pg.sprite.Sprite):
     def __init__(self, label, x, y, w, h):
         pg.sprite.Sprite.__init__(self)

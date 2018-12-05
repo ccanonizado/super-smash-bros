@@ -1,10 +1,10 @@
 '''
 
 This is similar to Button.py but when clicked - the old image stays.
+
 '''
 
 import os
-import sys
 import pygame as pg
 
 # add the path to the folder with the button images
@@ -38,6 +38,7 @@ class ReadyButton:
             self.image = pg.image.load(img_path+self.label+'a.png')
         return False
 
+    # toggle clicked attribute
     def click(self):
         if not self.clicked:
             self.clicked = True

@@ -23,12 +23,26 @@ class Start:
         nana = CharButton('nana', 750, 210, 150, 350)
         link = CharButton('link', 920, 210, 150, 350)
 
-        font = pg.font.Font(None, 100)
+        '''
+
+        NOTE - screen is the current background
+
+        name = input for player's name
+        no_name = no player input for name
+        character = character selection
+        waiting = ready / unready screen
+
+        '''
+
         screen = 'name'
 
         old_name = ''
         enteredName = False
         player_ready = False
+
+        font = pg.font.Font(None, 100)
+
+        # note - self.g.curr_player = current text of the input player name
 
         while self.g.status == START:
 
@@ -47,6 +61,8 @@ class Start:
 
             if screen == 'name' or screen == 'no_name':
                 if not self.g.name_available:
+                    # allow changing the name to player's own name
+                    # even though technically - that name is taken
                     if self.g.curr_player != old_name: 
                         self.g.screen.blit(START_NAME_EXISTS_BG, ORIGIN)
 
@@ -65,6 +81,7 @@ class Start:
                         self.g.disconnectPlayer(self.g.curr_player)
                     quit()
                 
+                # mouse click
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if back.isOver(pos) and not player_ready: 
                         if screen == 'name':
@@ -113,6 +130,7 @@ class Start:
                                 player_ready = True
                                 ready.click()
 
+                # mouse hover
                 if event.type == pg.MOUSEMOTION:
                     back.isOver(pos)
                     if screen == 'character':
@@ -136,10 +154,12 @@ class Start:
                                     if self.g.name_available or self.g.curr_player == old_name:
                                         screen = 'character'
                                         if not enteredName:
+                                            # if not entered yet - connect once
                                             enteredName = True
                                             old_name = self.g.curr_player
                                             self.g.connectPlayer(self.g.curr_player)
                                         elif enteredName:
+                                            # if entered once - just change name
                                             self.g.editPlayerName(old_name, self.g.curr_player)
                                             old_name = self.g.curr_player
                                     elif not self.g.name_available:

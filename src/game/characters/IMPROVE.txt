@@ -1,3 +1,0 @@
-This can be improved if a Player parent class was used.
-Then just change the necessary stuff to its child classes.
-But due to lack of time - one class per character.

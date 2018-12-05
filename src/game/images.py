@@ -9,7 +9,7 @@ If the label does not exist for your new value, just create a new one.
 
 import pygame as pg
 import os
-os.chdir("..")
+os.chdir('..')
 
 # other backgrounds
 INTRO_BG = pg.image.load('./images/backgrounds/intro.png')
@@ -32,14 +32,15 @@ ICON = pg.image.load('./images/others/icon.png')
 
 Character sprites:
 
-The images are one by one though we were supposed to use a sprite sheet.
+NOTE - The images are one by one though we were supposed to use a sprite sheet.
 Upon using the sprite sheet there were a lot of unnecessary frames.
 Hence we just picked the ones we needed for easier indexing.
 
-s -> standing
-m -> movement
-w -> weak attack
-h -> heavy attack
+D -> damaged
+S -> standing
+W -> weak attack
+H -> heavy attack
+M -> movement
 
 Most sprites are facing right
 

@@ -1,3 +1,5 @@
+Character values - change when balancing stats
+
 Mario
 W - 3
 H - 6

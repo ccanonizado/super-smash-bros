@@ -26,6 +26,7 @@ class Intro:
                     self.game.running = False
                     quit()
                 
+                # mouse click
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if start.isOver(pos):
                         self.game.status = START
@@ -37,6 +38,7 @@ class Intro:
                         self.game.status = ABOUT
                         break
 
+                # mouse hover
                 if event.type == pg.MOUSEMOTION:
                     start.isOver(pos)
                     guide.isOver(pos)
