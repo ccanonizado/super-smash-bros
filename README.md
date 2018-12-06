@@ -61,9 +61,14 @@ If you run it without errors, this should be the output:
 * Improve restart game
 * Improve sprites
 
+## Background Music
+
+* [Undertale - Megalovania](https://www.youtube.com/watch?v=ZcoqR9Bwx1Y)
+* [Pixel Poro Music](https://www.youtube.com/watch?v=ZhiX5vZgdRI)
+
 ## References
 
 * [Socket Programming](https://realpython.com/python-sockets/)
 * [Pygame](https://www.youtube.com/watch?v=i6xMBig-pP4&list=PLzMcBGfZo4-lp3jAExUCewBfMx3UZFkh5)
-* [Sprites](https://www.spriters-resource.com/custom_edited/supersmashbroscustoms/?fbclid=IwAR0G88z4oHA2ZWQc-oSYQOJ7FSOXIfTfQX3JPYjGChVrdTTlS7wT8VZZrjA) 
+* [Sprites](https://www.spriters-resource.com/custom_edited/supersmashbroscustoms/?fbclid=IwAR0G88z4oHA2ZWQc-oSYQOJ7FSOXIfTfQX3JPYjGChVrdTTlS7wT8VZZrjA)
 

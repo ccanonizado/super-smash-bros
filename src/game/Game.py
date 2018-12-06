@@ -3,11 +3,12 @@
 This is the main game file!
 
 All the other classes are distributed in the different directories:
-- /src/game/characters/ - Player.py and all other Character.pys
+- /src/game/characters/ - Character.pys
 - /src/game/objects/ - Button.py, CharButton.py, ReadyButton.py, and Platform.py
 - /src/game/menus/ - Intro.py, Other.py, and Start.py
 
 Other classes used in this directory are:
+- Server.py for the multiplayer game using UDP
 - Chat.py for the multiplayer chat using TCP
 - settings.py for all the configurations needed
 - images.py for all the photos imported
@@ -55,7 +56,8 @@ from images import *
 try:
     from Chat import Chat
 except:
-    print("You must install protobuf for python if you want to use chat!")
+    print("You must install protobuf for python if you want to use the chat!")
+    print()
 
 # dependencies
 import pygame as pg
@@ -88,13 +90,13 @@ class Game:
         self.clock = pg.time.Clock()
         self.status = INTRO
         self.running = True # game is running
+        self.showed_end = False # checks if end game results have been showed
         self.initialized = False # initialized game in arena (with players)
-        self.created_chat = False 
-        self.name_available = True
-        self.player_count = 0
-        self.curr_player = ''
-        self.showed_end = False
-        self.restart_request = False
+        self.created_chat = False # created chat lobby for everyone to connect
+        self.name_available = True # checks if curr_player text is available
+        self.restart_request = False # checks if player requested for a restart
+        self.curr_player = '' # value during input name screen
+        self.player_count = 0 # for the ready screen
 
         # converted background images for optimized game loop
         self.arena_bg = ARENA_BG.convert()
@@ -131,9 +133,11 @@ class Game:
                 Other(self, ABOUT, ABOUT_BG)
 
             elif self.status == GAME:
+                self.winner = ''
                 self.getStatus()
                 # once initialized - continuously update players
                 if self.initialized and self.playing:
+                    self.checkWinner()
                     self.updatePlayer()
                     self.updateAllPlayers()
                 self.clock.tick(FPS)
@@ -171,7 +175,7 @@ class Game:
 
     def events(self):
         try:
-            if self.restart_request:
+            if self.restart_request and self.showed_end:
                 self.restartGame()
 
             keys = pg.key.get_pressed()
@@ -255,7 +259,7 @@ class Game:
         try:
             self.all_sprites.update()
 
-            # check for collision
+            # check for collision with platforms
             for player in self.players.values():
                 if player.vel.y > 0:
                     collision = pg.sprite.spritecollide(player, self.platforms, False)
@@ -264,13 +268,13 @@ class Game:
                         player.vel[1] = 0
 
             # check for end game
-            self.alive_count = len(self.players)
-            self.ap = ''
-            for player in self.players.values():
-                if player.health == 0:
-                    self.alive_count -= 1
-                else:
-                    self.ap = player.name
+            # self.alive_count = len(self.players)
+            # self.ap = ''
+            # for player in self.players.values():
+            #     if player.health == 0:
+            #         self.alive_count -= 1
+            #     else:
+            #         self.ap = player.name
         
         except:
             quit()
@@ -291,23 +295,23 @@ class Game:
             # write the player's name on top of the sprite
             font = pg.font.Font(None, 20)
             for player in self.players.values():
-                coors = (player.rect.left, player.rect.top-10)
+                coors = (player.rect.left, player.rect.top-15)
                 text_surface = font.render((player.name), True, WHITE)
                 self.screen.blit(text_surface, coors)
 
             # show end game results
-            if self.alive_count <= 1 and not self.showed_end:
+            if len(self.winner) > 0 and not self.showed_end:
+                self.initialized = False
                 self.playing = False
 
                 self.chat_messages = []
-                self.chat_messages.append('===== {} won this round! ====='.format(self.ap))
+                self.chat_messages.append('===== {} won this round! ====='.format(self.winner))
                 self.chat_messages.append("-> Press F1 to restart the game")
                 self.chat_messages.append('   * Everyone must press F1 to restart')
                 self.chat_messages.append('-> Press Esc to exit the game')
                 self.chat_messages.append('   * Recreating is not supported for now')
                 self.chat_messages.append('   * If you want to recreate a game:')
-                self.chat_messages.append('     1. Restart Server.py')
-                self.chat_messages.append('     2. Run Game.py <ip_address> again')
+                self.chat_messages.append('     Simply run Game.py <ip_address> again')
                 self.chat_messages.append('! ENJOY, you may still chat !')
                 self.chat_messages.append('======================================')
 
@@ -414,6 +418,7 @@ class Game:
                             self.all_sprites.add(player)
                             if self.curr_player != n:
                                 self.enemy_sprites.add(player)
+                        
                         self.initialized = True
 
                 elif action == 'RESTART_GAME':
@@ -426,6 +431,7 @@ class Game:
                     self.all_sprites = pg.sprite.Group()
                     self.platforms = pg.sprite.Group()
                     self.loadPlatforms()
+                    
                     for key, value in data.items():
                         n = key
                         x = float(value['xPos'])
@@ -456,13 +462,16 @@ class Game:
                         if self.curr_player != n:
                             self.enemy_sprites.add(player)
 
-                    self.showed_end = False
                     self.chat_messages = []
                     self.chat_messages.append('=========== GAME RESTART ===========')
                     self.chat_messages.append('Best of luck - may the best player win!')
                     self.chat_messages.append('======================================')
-                    self.playing = True
+                   
+                   # reset some game variables
                     self.status = GAME
+                    self.playing = True
+                    self.initialized = True
+                    self.showed_end = False
                     self.restart_request = False
 
                 # check if game has started - if it has started - join
@@ -500,6 +509,9 @@ class Game:
                         pg.quit()
                         quit()
 
+                elif action == 'CHECK_WINNER':
+                    self.winner = message[1]
+
                 elif action == 'UPDATE_ALL_PLAYERS':
                     message.pop(0)
                     message = ' '.join(message)
@@ -521,9 +533,6 @@ class Game:
                         player.direc = direc
                         player.walk_c = walk_c
                         player.move = move
-
-                    # FIX
-                    # self.playing = True
 
     def send(self, message):
         self.s.sendto(str.encode(message), SERVER)
@@ -617,8 +626,12 @@ class Game:
         self.send(message)
 
     def getStatus(self):
-        message ='GET_STATUS'
-        self.send(message)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+        message = 'GET_STATUS'
+        self.send(message)     
+
+    def checkWinner(self):
+        message = 'CHECK_WINNER'
+        self.send(message)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
 
 # main start of the program
 game = Game()

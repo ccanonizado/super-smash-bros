@@ -61,6 +61,9 @@ QUIT_GAME
 GET_STATUS
 - returns current status of the game
 
+CHECK_WINNER
+- for end game detection
+
 ======================================================================
 
 NOTE - for reference
@@ -90,9 +93,14 @@ from settings import *
 import socket
 import json
 import copy
+import sys
+
+if len(sys.argv) == 1:
+    HOST = '0.0.0.0'
+else:
+    HOST = sys.argv[1]
 
 # server parameters
-HOST = '0.0.0.0'
 PORT = 10000
 BUFFER = 1024
 SERVER = (HOST, PORT)
@@ -105,7 +113,7 @@ players = {} # players dict with attributes
 init_players = {} # copy of initial players (for restarting)
 players_ready = 0 # must be equal to len(players) to start
 restart_count = 0 # must be equal to len(players) to restart
-chat_lobby = 0 # lobby_id to be broadcasted to everyone
+chat_lobby = '' # lobby_id to be broadcasted to everyone
 game_status = WAITING # check settings.py for all game statuses
 
 print('Server is now up and running!')
@@ -251,6 +259,7 @@ while True:
         chat_lobby = message[1]
         print("Created chat lobby: {}".format(message[1]))
         print("Players joined the lobby!")
+        print("Game is now running.")
 
     # if lobby is created - server broadcasts lobby_id
     elif action == 'JOIN_CHAT':
@@ -298,16 +307,44 @@ while True:
 
     # changes game status to QUIT
     elif action == 'QUIT_GAME':
-        print('One player quit! Reset the server if you want to play again.')
+        print('One player quit! Resetting server data.')
+        print()
+        print("NEW UPDATES:")
         data = 'QUIT_GAME'
         data = str.encode(data)
-        game_status = QUIT
+        game_status = WAITING
+
+        # reset server data
+        players = {}
+        init_players = {}
+        players_ready = 0
+        restart_count = 0
+        chat_lobby = ''
 
     # consistently returns the game status
     elif action == 'GET_STATUS':
         data = 'GET_STATUS '
         data += str(game_status)
         data = str.encode(data)
+
+    #end game detection
+    elif action == 'CHECK_WINNER':
+        alive_count = len(players)
+        alive = ''
+        for key, value in players.items():
+            if float(value['health']) == 0:
+                alive_count -= 1
+            else:
+                alive = key
+
+        # if there is a winner - return the player's name
+        if alive_count <= 1:
+            data = 'CHECK_WINNER '
+            data += alive
+            data = str.encode(data)
+        else:
+            data = 'NONE'
+            data = str.encode(data)
 
     # send the response back to the client
     if data:

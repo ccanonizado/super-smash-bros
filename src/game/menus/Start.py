@@ -75,8 +75,6 @@ class Start:
                 if event.type == pg.QUIT:
                     print("You quit in the middle of the game!")
                     self.g.running = False
-                    if self.g.playing:
-                        self.g.playing = False
                     if enteredName:
                         self.g.disconnectPlayer(self.g.curr_player)
                     quit()

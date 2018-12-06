@@ -41,8 +41,6 @@ class Link(pg.sprite.Sprite):
         self.image = maS1
         self.rect = self.image.get_rect()   
         self.rect.center = (GAME_WIDTH / 2, HEIGHT / 2)
-        self.w = self.image.get_size()[0]
-        self.h = self.image.get_size()[1]
         self.vel = vec(0,0)
         self.acc = vec(0,0)
 
@@ -53,23 +51,27 @@ class Link(pg.sprite.Sprite):
         if collision:
             self.vel.y = -VEL
 
+    # called in Game.py
     def weakAttack(self):
-        collided_enemies = pg.sprite.spritecollide(self, self.game.enemy_sprites, False)
-        for enemy in collided_enemies:
-            enemy.health -= self.weak
-            enemy.move = DAMAGED
-            self.game.attackPlayer(enemy.name, self.weak, DAMAGED)
-            if enemy.health < 0:
-                enemy.health = 0
+        if self.health > 0:
+            collided_enemies = pg.sprite.spritecollide(self, self.game.enemy_sprites, False)
+            for enemy in collided_enemies:
+                enemy.health -= self.weak
+                enemy.move = DAMAGED
+                self.game.attackPlayer(enemy.name, self.weak, DAMAGED)
+                if enemy.health < 0:
+                    enemy.health = 0
 
+    # called in Game.py
     def heavyAttack(self):
-        collided_enemies = pg.sprite.spritecollide(self, self.game.enemy_sprites, False)
-        for enemy in collided_enemies:
-            enemy.health -= self.heavy
-            enemy.move = DAMAGED
-            self.game.attackPlayer(enemy.name, self.heavy, DAMAGED)
-            if enemy.health < 0:
-                enemy.health = 0
+        if self.health > 0:
+            collided_enemies = pg.sprite.spritecollide(self, self.game.enemy_sprites, False)
+            for enemy in collided_enemies:
+                enemy.health -= self.heavy
+                enemy.move = DAMAGED
+                self.game.attackPlayer(enemy.name, self.heavy, DAMAGED)
+                if enemy.health < 0:
+                    enemy.health = 0
  
     def update(self):
         self.acc = vec(0 ,0.5)
@@ -145,4 +147,5 @@ class Link(pg.sprite.Sprite):
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
 
+        self.rect = self.image.get_rect()
         self.rect.midbottom = self.pos
