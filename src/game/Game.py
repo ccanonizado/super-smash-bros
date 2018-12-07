@@ -30,7 +30,7 @@ print('========== SUPER SMASH BROS - Canonizado, Semilla, Serrano ==========')
 print('=== If at any time - the game crashes - check the Server terminal ===')
 print('Happy playing! This is the current version and limitations:')
 print('- Once you create a game and enter, you must reset for a new one.')
-print('- No option to recreate a game or returning to the menu menu.')
+print('- No option to recreate a game or to return to the main menu.')
 print('- Game is just an endless loop that detects winner of each round.')
 print()
 
@@ -135,7 +135,7 @@ class Game:
             elif self.status == GAME:
                 self.winner = ''
                 self.getStatus()
-                # once initialized - continuously update players
+                # once initialized - continuously update players and check for a winner
                 if self.initialized and self.playing:
                     self.checkWinner()
                     self.updatePlayer()
@@ -266,15 +266,6 @@ class Game:
                     if collision:
                         player.pos[1] = collision[0].rect.top + 1
                         player.vel[1] = 0
-
-            # check for end game
-            # self.alive_count = len(self.players)
-            # self.ap = ''
-            # for player in self.players.values():
-            #     if player.health == 0:
-            #         self.alive_count -= 1
-            #     else:
-            #         self.ap = player.name
         
         except:
             quit()

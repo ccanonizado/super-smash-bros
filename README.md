@@ -7,7 +7,7 @@ CMSC 137 project made in Python and developed by:
 
 ## Play!
 
-To play, clone or download this repository and then go to the **/src/game** directory. Once there, you can follow this:
+To play, clone or download this repository and then go to the **/src/game** directory. Once there, follow this:
 
 ```
 # Remember to use python3!
@@ -30,7 +30,7 @@ If you run it without errors, this should be the output:
 ### Server (terminal)
 ![alt text](./github/server.png "Server")
 
-**Note - you only need one server at a time!**
+*Note - you only need one server at a time!*
 
 ### Client (game)
 ![alt text](./github/intro.png "Super Smash Bros")
@@ -49,26 +49,14 @@ If you run it without errors, this should be the output:
 ### Character selection (stats vary)
 ![alt text](./github/character.png "Character")
 
-### To start - ready players must be == players connected
+### Ready screen pre-game
 ![alt text](./github/ready.png "Ready")
 
 ### Sample arena with chat screen
 ![alt text](./github/arena.png "Arena")
-
-## Next Version
-
-* Add background music
-* Improve restart game
-* Improve sprites
-
-## Background Music
-
-* [Undertale - Megalovania](https://www.youtube.com/watch?v=ZcoqR9Bwx1Y)
-* [Pixel Poro Music](https://www.youtube.com/watch?v=ZhiX5vZgdRI)
 
 ## References
 
 * [Socket Programming](https://realpython.com/python-sockets/)
 * [Pygame](https://www.youtube.com/watch?v=i6xMBig-pP4&list=PLzMcBGfZo4-lp3jAExUCewBfMx3UZFkh5)
 * [Sprites](https://www.spriters-resource.com/custom_edited/supersmashbroscustoms/?fbclid=IwAR0G88z4oHA2ZWQc-oSYQOJ7FSOXIfTfQX3JPYjGChVrdTTlS7wT8VZZrjA)
-
