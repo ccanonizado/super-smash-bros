@@ -63,6 +63,7 @@ except:
 import pygame as pg
 import socket
 import json
+import time
 
 print()
 print('UPDATES (errors will show up here if ever):')
@@ -139,7 +140,7 @@ class Game:
                 self.getStatus()
 
                 if not self.playing and not self.showed_end:
-                    self.playerLoaded(self.curr_player)
+                    # self.playerLoaded(self.curr_player)
                     self.checkLoaded()
 
                 # once initialized - continuously update players and check for a winner
@@ -148,7 +149,7 @@ class Game:
                     self.checkWinner()
                     self.updatePlayer()
                     self.updateAllPlayers()
-                    
+
                 self.clock.tick(FPS)
                 self.events()
                 self.update()
@@ -429,6 +430,7 @@ class Game:
                                 self.enemy_sprites.add(player)
                         
                         self.initialized = True
+                        self.playerLoaded(self.curr_player)
                         self.status = GAME
 
                 elif action == 'RESTART_GAME':
