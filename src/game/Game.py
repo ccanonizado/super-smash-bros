@@ -137,14 +137,13 @@ class Game:
             elif self.status == GAME:
                 self.winner = ''
 
-                self.clock.tick(FPS)
-                self.events()
-
                 if self.initialized and self.playing:
-                    self.updateAllPlayers()
                     self.checkDisconnect()
                     self.checkWinner()
-
+                    self.updateAllPlayers()
+                    
+                self.clock.tick(FPS)
+                self.events()
                 self.update()
                 self.draw()
             

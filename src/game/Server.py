@@ -346,12 +346,10 @@ while True:
             data = 'QUIT_GAME'
             data = str.encode(data)
 
+            game_status = QUIT
+            
             for player in players.values():
                 s.sendto(data, player['address'])
-
-            continue
-
-            game_status = QUIT
 
             # reset server data
             players = {}
@@ -362,6 +360,9 @@ while True:
             game_started = False
             game_status = WAITING
             recent_disconnect = ''
+
+            continue
+
 
         #end game detection
         elif action == 'CHECK_WINNER':
