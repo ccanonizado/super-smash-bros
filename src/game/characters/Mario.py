@@ -156,10 +156,10 @@ class Mario(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.midbottom = self.pos
 
-        # if self.vel.y > 0:
-        #     collision = pg.sprite.spritecollide(self, self.game.platforms, False)
-        #     if collision:
-        #         self.pos[1] = collision[0].rect.top + 1
-        #         self.vel[1] = 0
+        if self.vel.y > 0:
+            collision = pg.sprite.spritecollide(self, self.game.platforms, False)
+            if collision:
+                self.pos[1] = collision[0].rect.top + 1
+                self.vel[1] = 0
 
-        # self.game.updatePlayer()
+        self.game.updatePlayer()

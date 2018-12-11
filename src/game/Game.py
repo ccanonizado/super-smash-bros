@@ -145,7 +145,7 @@ class Game:
                 if self.initialized and self.playing:
                     self.updateAllPlayers()
                     self.checkDisconnect()
-                    self.checkWinner()
+                    # self.checkWinner()
 
                 self.draw()
             
@@ -270,14 +270,14 @@ class Game:
         self.all_sprites.update()
 
         # check for collision with platforms
-        for player in self.players.values():
-            if player.vel.y > 0:
-                collision = pg.sprite.spritecollide(player, self.platforms, False)
-                if collision:
-                    player.pos[1] = collision[0].rect.top + 1
-                    player.vel[1] = 0
+        # for player in self.players.values():
+        #     if player.vel.y > 0:
+        #         collision = pg.sprite.spritecollide(player, self.platforms, False)
+        #         if collision:
+        #             player.pos[1] = collision[0].rect.top + 1
+        #             player.vel[1] = 0
 
-        self.updatePlayer()
+        # self.updatePlayer()
         
         # except:
         #     quit()
