@@ -141,9 +141,7 @@ class Game:
                 # once initialized - continuously update players and check for a winner
                 if self.initialized and self.playing:
                     self.checkDisconnect()
-                    self.checkWinner()
-                    self.updatePlayer()
-                    self.updateAllPlayers()
+                    # self.checkWinner()
 
                 self.clock.tick(FPS)
                 self.events()
@@ -598,10 +596,6 @@ class Game:
             'move': player.move
         }
         message += json.dumps(data)
-        self.send(message)
-
-    def updateAllPlayers(self):
-        message = 'UPDATE_ALL_PLAYERS'
         self.send(message)
 
     def attackPlayer(self, player, damage, move):

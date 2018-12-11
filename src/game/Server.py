@@ -205,7 +205,7 @@ while True:
 
         # starts game and sends to all player addresses
         elif action == 'START_GAME':
-            if players_ready == len(players) and len(players) >= 2 and len(players) <= 6:
+            if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
                 if not game_started:
                     print("Initialized Game!")
                     game_started = True
@@ -310,12 +310,15 @@ while True:
             players[name]['direc'] = direc
             players[name]['walk_c'] = walk_c
             players[name]['move'] = move
-        
-        # broadcast all player updates
-        elif action == 'UPDATE_ALL_PLAYERS':
+
             data = 'UPDATE_ALL_PLAYERS '
             data += json.dumps(players)
             data = str.encode(data)
+
+            for player in players.values():
+                s.sendto(data, player['address'])
+
+            continue
 
         # similar to update player but for decreasing the health
         elif action == 'ATTACK_PLAYER':
@@ -327,6 +330,15 @@ while True:
             # health cannot be less than 0
             if float(players[message[1]]['health']) < 0:
                 players[message[1]]['health'] = '0'
+            
+            data = 'UPDATE_ALL_PLAYERS '
+            data += json.dumps(players)
+            data = str.encode(data)
+
+            for player in players.values():
+                s.sendto(data, player['address'])
+
+            continue
 
         # changes game status to QUIT
         elif action == 'QUIT_GAME':
@@ -368,6 +380,7 @@ while True:
                 data = 'CHECK_WINNER '
                 data += alive
                 data = str.encode(data)
+                game_status = WAITING
             else:
                 data = 'NONE'
                 data = str.encode(data)
