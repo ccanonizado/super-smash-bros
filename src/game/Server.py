@@ -221,9 +221,18 @@ while True:
             data += str(players_ready)
             data = str.encode(data)
 
+        # returns true if everyone is ready - false if not
+        elif action == 'CHECK_READY':
+            data = 'CHECK_READY '
+            if players_ready == len(players) and players_ready >= 1 and players_ready <= 6:
+                data += 'TRUE'
+            else:
+                data += 'FALSE'
+            data = str.encode(data)
+
         # starts the game given everyone is ready and players >= 3 and players <= 6
         elif action == 'START_GAME':
-            if players_ready == len(players) and len(players) >= 2 and len(players) <= 6:
+            if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
                 if not game_started:
                     print("Initialized Game!")
                     game_started = True
@@ -290,7 +299,7 @@ while True:
         elif action == 'CHECK_LOADED':
             data = 'NONE'
             if players_loaded == len(players):
-                data = 'CHECK_LOADED '                
+                data = 'CHECK_LOADED '          
                 data += 'TRUE'
             data = str.encode(data)
 
@@ -407,15 +416,6 @@ while True:
             else:
                 data = 'NONE'
                 data = str.encode(data)
-
-        # returns true if everyone is ready - false if not
-        elif action == 'CHECK_READY':
-            data = 'CHECK_READY '
-            if players_ready == len(players) and players_ready >= 2 and players_ready <= 6:
-                data += 'TRUE'
-            else:
-                data += 'FALSE'
-            data = str.encode(data)
 
     # send the response back to the client
     if data:

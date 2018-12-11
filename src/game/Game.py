@@ -146,7 +146,7 @@ class Game:
                 # once initialized - continuously update players and check for a winner
                 if self.initialized and self.playing:
                     self.checkDisconnect()
-                    self.checkWinner()
+                    # self.checkWinner()
                     self.updatePlayer()
                     self.updateAllPlayers()
 
