@@ -66,7 +66,7 @@ class Start:
 
                 if player_ready:
                     self.g.editPlayerStatus(self.g.curr_player, 'ready')
-                    self.g.joinGame()
+                    # self.g.joinGame()
 
             if screen == 'name' or screen == 'no_name':
                 if not self.g.name_available:
@@ -170,7 +170,8 @@ class Start:
                             
                             else:
                                 if player_ready and self.g.all_ready:
-                                    self.g.startGame()
+                                    # self.g.startGame()
+                                    pass
 
                         else:
                             # limit character length for the screen

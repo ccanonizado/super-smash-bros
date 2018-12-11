@@ -139,10 +139,6 @@ class Game:
                 self.winner = ''
                 self.getStatus()
 
-                if not self.playing and not self.showed_end:
-                    # self.playerLoaded(self.curr_player)
-                    self.checkLoaded()
-
                 # once initialized - continuously update players and check for a winner
                 if self.initialized and self.playing:
                     self.checkDisconnect()
@@ -393,6 +389,7 @@ class Game:
 
                 # instantiate all the players in the arena
                 elif action == 'START_GAME':
+                    print("HELLO")
                     if not self.initialized:
                         message.pop(0)
                         message = ' '.join(message)
@@ -431,6 +428,8 @@ class Game:
                         
                         self.initialized = True
                         self.joinChatLobby()
+                        self.status = GAME
+                        self.playing = True
 
                 # check if game has started - if it has started - join
                 elif action == 'JOIN_GAME':
