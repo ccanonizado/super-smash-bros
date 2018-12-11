@@ -64,12 +64,6 @@ CHECK_WINNER
 CHECK_READY
 - checks if everyone is ready
 
-PLAYER_LOADED
-- one player loaded
-
-CHECK_LOADED
-- checks if everyone loaded 
-
 CHECK_DISCONNECT
 - checks if there is someone who recently disconnected
 
@@ -121,7 +115,6 @@ s.bind(SERVER)
 
 players = {} # players dict with attributes
 init_players = {} # copy of initial players (for restarting)
-players_loaded = 0 # must be equal to len(players) to continue updating
 players_ready = 0 # must be equal to len(players) to start
 restart_count = 0 # must be equal to len(players) to restart
 chat_lobby = '' # lobby_id to be broadcasted to everyone
@@ -212,7 +205,7 @@ while True:
 
             players_ready = 0
             for player in players.values():
-                if player['status'] == 'ready' or player['status'] == 'readyloaded':
+                if player['status'] == 'ready':
                     players_ready += 1
 
         # return number of players ready
@@ -232,19 +225,21 @@ while True:
 
         # starts the game given everyone is ready and players >= 3 and players <= 6
         elif action == 'START_GAME':
+            data = 'NONE'
+            data = str.encode(data)
             if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
                 if not game_started:
                     print("Initialized Game!")
                     game_started = True
 
-                    try:
-                        chat = Chat()
-                        chat_lobby = chat.createLobby(6).lobby_id
-                    except:
-                        print("CHAT ERROR! Server might be down.")
+                    # try:
+                    #     chat = Chat()
+                    #     chat_lobby = chat.createLobby(6).lobby_id
+                    #     print("Created chat lobby: {}".format(chat_lobby))
+                    #     print("Players joined the lobby!")
+                    # except:
+                    #     print("CHAT ERROR! Server might be down.")
 
-                    print("Created chat lobby: {}".format(chat_lobby))
-                    print("Players joined the lobby!")
                     print("Game is now running.")
 
                     i = 0
@@ -285,23 +280,6 @@ while True:
                     data += json.dumps(players)
                     data = str.encode(data)
                     game_status = GAME
-
-        # increment player_loaded:
-        elif action == 'PLAYER_LOADED':
-            players[message[1]]['status'] = 'readyloaded'
-
-            players_loaded = 0
-            for player in players.values():
-                if player['status'] == 'readyloaded':
-                    players_loaded += 1
-
-        # check if everyone has loaded
-        elif action == 'CHECK_LOADED':
-            data = 'NONE'
-            if players_loaded == len(players):
-                data = 'CHECK_LOADED '          
-                data += 'TRUE'
-            data = str.encode(data)
 
         # increment restart_count
         elif action == 'RESTART_REQUEST':
@@ -384,7 +362,6 @@ while True:
             # reset server data
             players = {}
             init_players = {}
-            players_loaded = 0
             players_ready = 0
             restart_count = 0
             chat_lobby = ''

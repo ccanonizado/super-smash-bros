@@ -146,7 +146,7 @@ class Game:
                 # once initialized - continuously update players and check for a winner
                 if self.initialized and self.playing:
                     self.checkDisconnect()
-                    # self.checkWinner()
+                    self.checkWinner()
                     self.updatePlayer()
                     self.updateAllPlayers()
 
@@ -430,9 +430,15 @@ class Game:
                                 self.enemy_sprites.add(player)
                         
                         self.initialized = True
-                        self.playerLoaded(self.curr_player)
+                        self.joinChatLobby()
+
+                # check if game has started - if it has started - join
+                elif action == 'JOIN_GAME':
+                    if int(message[1]) == GAME:
+                        self.startGame()
+                        self.joinChatLobby()
                         self.status = GAME
-                        self.playing = True
+                        self.playing = True                        
 
                 elif action == 'RESTART_GAME':
                     message.pop(0)
@@ -487,12 +493,6 @@ class Game:
                     self.showed_end = False
                     self.restart_request = False
 
-                # check if game has started - if it has started - join
-                elif action == 'JOIN_GAME':
-                    if int(message[1]) == GAME:
-                        self.startGame()
-                        self.joinChatLobby()
-
                 elif action == 'JOIN_CHAT':
                     if not self.created_chat:
                         self.chat = Chat(self)
@@ -537,10 +537,6 @@ class Game:
                         self.all_ready = True
                     elif message[1] == 'FALSE':
                         self.all_ready = False
-
-                elif action == 'CHECK_LOADED':
-                    if message[1] == 'TRUE':
-                        self.playing = True
 
                 elif action == 'UPDATE_ALL_PLAYERS':
                     message.pop(0)
@@ -611,15 +607,6 @@ class Game:
 
     def startGame(self):
         message = 'START_GAME'
-        self.send(message)
-
-    def playerLoaded(self, name):
-        message = 'PLAYER_LOADED '
-        message += name
-        self.send(message)
-
-    def checkLoaded(self):
-        message = 'CHECK_LOADED'
         self.send(message)
 
     def joinGame(self):
