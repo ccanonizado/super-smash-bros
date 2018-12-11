@@ -422,6 +422,8 @@ class Game:
                                 self.enemy_sprites.add(player)
                         
                         self.initialized = True
+                        self.status = GAME
+                        self.playing = True
 
                 elif action == 'RESTART_GAME':
                     message.pop(0)

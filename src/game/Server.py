@@ -201,7 +201,6 @@ while True:
 
         # change value of the player's status (check API for more)
         elif action == 'EDIT_STATUS':
-            print('{} is now {}'.format(message[1], message[2]))
             players[message[1]]['status'] = message[2]
 
             players_ready = 0
