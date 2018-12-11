@@ -59,7 +59,7 @@ class Start:
             elif screen == 'waiting':
                 self.g.screen.blit(START_WAITING_BG, ORIGIN)
                 text_surface = font.render(str(self.g.player_count), True, WHITE)
-                self.g.screen.blit(text_surface,(700,445))
+                self.g.screen.blit(text_surface,(700,450))
                 
             if screen == 'name' or screen == 'no_name':
                 if not self.g.name_available:

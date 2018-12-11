@@ -71,7 +71,7 @@ print('UPDATES (errors will show up here if ever):')
 # server parameters
 HOST = sys.argv[1]
 PORT = 8000
-BUFFER = 4096
+BUFFER = 2048
 SERVER = (HOST, PORT)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -138,16 +138,17 @@ class Game:
             elif self.status == GAME:
                 self.winner = ''
 
-                # once initialized - continuously update players and check for a winner
                 if self.initialized and self.playing:
-                    self.updatePlayer()
-                    self.updateAllPlayers()
                     self.checkDisconnect()
                     self.checkWinner()
 
                 self.clock.tick(FPS)
                 self.events()
                 self.update()
+
+                if self.initialized and self.playing:
+                    self.updateAllPlayers()
+
                 self.draw()
             
     def new(self):
@@ -421,9 +422,9 @@ class Game:
                             if self.curr_player != n:
                                 self.enemy_sprites.add(player)
                         
-                        self.initialized = True
                         self.status = GAME
                         self.playing = True                     
+                        self.initialized = True
 
                 elif action == 'RESTART_GAME':
                     message.pop(0)
@@ -518,6 +519,7 @@ class Game:
                         self.all_ready = False
 
                 elif action == 'UPDATE_ALL_PLAYERS':
+                    print("Hello")
                     message.pop(0)
                     message = ' '.join(message)
                     data = json.loads(message)
