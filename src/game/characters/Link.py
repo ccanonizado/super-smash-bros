@@ -53,7 +53,7 @@ class Link(pg.sprite.Sprite):
 
     # called in Game.py
     def weakAttack(self):
-        if self.health > 0:
+        if self.health > 0 and not self.game.chatting:
             collided_enemies = pg.sprite.spritecollide(self, self.game.enemy_sprites, False)
             for enemy in collided_enemies:
                 enemy.health -= self.weak
@@ -64,7 +64,7 @@ class Link(pg.sprite.Sprite):
 
     # called in Game.py
     def heavyAttack(self):
-        if self.health > 0:
+        if self.health > 0 and not self.game.chatting:
             collided_enemies = pg.sprite.spritecollide(self, self.game.enemy_sprites, False)
             for enemy in collided_enemies:
                 enemy.health -= self.heavy

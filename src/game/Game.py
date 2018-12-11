@@ -265,7 +265,10 @@ class Game:
             quit()
 
     def update(self):
-        self.all_sprites.update()
+        try:
+            self.all_sprites.update()
+        except:
+            quit()
 
     # for consistently drawing the background and the sprites
     def draw(self):
