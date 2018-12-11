@@ -218,6 +218,7 @@ while True:
             if not game_started:
                 game_started = True
 
+                # store chat
                 chat = Chat()
                 chat_lobby = chat.createLobby(6).lobby_id
 

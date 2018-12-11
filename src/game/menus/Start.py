@@ -77,6 +77,7 @@ class Start:
                     if enteredName:
                         self.g.disconnectPlayer(self.g.curr_player)
                     self.g.running = False
+                    self.g.s.close()
                     quit()
                 
                 # mouse click

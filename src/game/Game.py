@@ -201,6 +201,7 @@ class Game:
                         self.quitGame()
 
                     self.running = False
+                    self.s.close()
                     quit()
 
                 # majority of chat flow + attacks
