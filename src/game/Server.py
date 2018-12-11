@@ -210,22 +210,22 @@ while True:
                     print("Initialized Game!")
                     game_started = True
 
-                    # try:
-                    #     chat = Chat()
-                    #     chat_lobby = chat.createLobby(6).lobby_id
-                    #     print("Created chat lobby: {}".format(chat_lobby))
-                    #     print("Players joined the lobby!")
+                    try:
+                        chat = Chat()
+                        chat_lobby = chat.createLobby(6).lobby_id
+                        print("Created chat lobby: {}".format(chat_lobby))
+                        print("Players joined the lobby!")
 
-                    #     # broadcast chat_lobby to everyone
-                    #     data = 'JOIN_CHAT '
-                    #     data += str(chat_lobby)
-                    #     data = str.encode(data)
+                        # broadcast chat_lobby to everyone
+                        data = 'JOIN_CHAT '
+                        data += str(chat_lobby)
+                        data = str.encode(data)
 
-                    #     for player in players.values():
-                    #         s.sendto(data, player['address'])
+                        for player in players.values():
+                            s.sendto(data, player['address'])
 
-                    # except:
-                    #     print("CHAT ERROR! Server might be down.")
+                    except:
+                        print("CHAT ERROR! Server might be down.")
 
                     print("Game is now running.")
 
@@ -302,7 +302,7 @@ while True:
             walk_c = payload['walk_c']
             move = payload['move']
 
-            if float(yPos) > 670:
+            if float(yPos) > 700:
                 yPos = '30'
 
             players[name]['status'] = status
