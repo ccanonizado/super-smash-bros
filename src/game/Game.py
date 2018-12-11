@@ -422,17 +422,8 @@ class Game:
                                 self.enemy_sprites.add(player)
                         
                         self.initialized = True
-                        self.joinChatLobby()
                         self.status = GAME
-                        self.playing = True
-
-                # check if game has started - if it has started - join
-                elif action == 'JOIN_GAME':
-                    if int(message[1]) == GAME:
-                        self.startGame()
-                        self.joinChatLobby()
-                        self.status = GAME
-                        self.playing = True                        
+                        self.playing = True                     
 
                 elif action == 'RESTART_GAME':
                     message.pop(0)
@@ -591,10 +582,6 @@ class Game:
 
     def startGame(self):
         message = 'START_GAME'
-        self.send(message)
-
-    def joinChatLobby(self):
-        message = 'JOIN_CHAT'
         self.send(message)
  
     def updatePlayer(self):
