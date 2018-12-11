@@ -63,7 +63,6 @@ except:
 import pygame as pg
 import socket
 import json
-import time
 
 print()
 print('UPDATES (errors will show up here if ever):')
@@ -140,13 +139,13 @@ class Game:
 
                 self.clock.tick(FPS)
                 self.events()
-                self.update()
 
                 if self.initialized and self.playing:
                     self.updateAllPlayers()
                     self.checkDisconnect()
-                    # self.checkWinner()
+                    self.checkWinner()
 
+                self.update()
                 self.draw()
             
     def new(self):
@@ -178,163 +177,149 @@ class Game:
         self.platforms.add(plat3)
 
     def events(self):
-        # try:
-        keys = pg.key.get_pressed()
+        try:
+            keys = pg.key.get_pressed()
 
-        # once player enters game screen - show initial chat
-        if not self.chat_init:
-            self.chat_text = '<Enter> disables movement!'
-            self.chat_init = True
+            # once player enters game screen - show initial chat
+            if not self.chat_init:
+                self.chat_text = '<Enter> disables movement!'
+                self.chat_init = True
 
-        for event in pg.event.get():
-            # check for closing window
-            if event.type == pg.QUIT:                    
-                print("You quit in the middle of the game!")
-                self.disconnectPlayer(self.curr_player)
+            for event in pg.event.get():
+                # check for closing window
+                if event.type == pg.QUIT:                    
+                    print("You quit in the middle of the game!")
+                    self.disconnectPlayer(self.curr_player)
 
-                # if end game detected - quit other players as well
-                if self.showed_end:
-                    self.quitGame()
-
-                if self.playing:
-                    self.playing = False
-
-                self.running = False
-                self.s.close()
-                quit()
-
-            # majority of chat flow + attacks
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_z:
-                    self.players[self.curr_player].weakAttack()
-
-                elif event.key == pg.K_x:
-                    self.players[self.curr_player].heavyAttack()
-
-                if event.key == pg.K_RETURN:
-                    if not self.chatting:
-                        self.chatting = True
-
-                        # first enter will replace default text
-                        self.chat_once = True
-                        self.chat_text = 'Type here!'
-
-                    elif self.chatting:
-                        self.chatting = False
-
-                        # send message to server and replace with default text
-                        try:
-                            self.chat.chatInLobby(self.chat_text)
-                        except:
-                            self.chat_messages.append('CHAT ERROR! Server might be down!')
-                            print('CHAT ERROR! Server might be down!')
-                        self.chat_text = '<Enter> disables movement!'
-
-                elif event.key == pg.K_F1:
-                    if self.showed_end:
-                        if not self.restart_request:
-                            self.restartRequest()
-                            self.restart_request = True
-                            self.chat_messages.append('You sent a restart request!')
-
-                elif event.key == pg.K_ESCAPE:
+                    # if end game detected - quit other players as well
                     if self.showed_end:
                         self.quitGame()
 
-                else:
-                    if self.chatting:
-                        if self.chat_once:
-                            self.chat_once = False
-                            self.chat_text = ''
-                        
-                        # maximum message length is 22 to fit the screen
-                        if len(self.chat_text) <= 22:
-                            char = event.unicode
-                            self.chat_text += char
+                    if self.playing:
+                        self.playing = False
 
-        if keys[pg.K_BACKSPACE]:
-            
-            # self.chat_once just clears 'Type here!' after initial type
-            if self.chatting:
-                if self.chat_once:
-                    self.chat_once = False
-                    self.chat_text = ''
-                else:
-                    self.chat_text = self.chat_text[:-1]
-    
-        # except:
-        #     quit()
+                    self.running = False
+                    self.s.close()
+                    quit()
+
+                # majority of chat flow + attacks
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_z:
+                        self.players[self.curr_player].weakAttack()
+
+                    elif event.key == pg.K_x:
+                        self.players[self.curr_player].heavyAttack()
+
+                    if event.key == pg.K_RETURN:
+                        if not self.chatting:
+                            self.chatting = True
+
+                            # first enter will replace default text
+                            self.chat_once = True
+                            self.chat_text = 'Type here!'
+
+                        elif self.chatting:
+                            self.chatting = False
+
+                            # send message to server and replace with default text
+                            try:
+                                self.chat.chatInLobby(self.chat_text)
+                            except:
+                                self.chat_messages.append('CHAT ERROR! Server might be down!')
+                                print('CHAT ERROR! Server might be down!')
+                            self.chat_text = '<Enter> disables movement!'
+
+                    elif event.key == pg.K_F1:
+                        if self.showed_end:
+                            if not self.restart_request:
+                                self.restartRequest()
+                                self.restart_request = True
+                                self.chat_messages.append('You sent a restart request!')
+
+                    elif event.key == pg.K_ESCAPE:
+                        if self.showed_end:
+                            self.quitGame()
+
+                    else:
+                        if self.chatting:
+                            if self.chat_once:
+                                self.chat_once = False
+                                self.chat_text = ''
+                            
+                            # maximum message length is 22 to fit the screen
+                            if len(self.chat_text) <= 22:
+                                char = event.unicode
+                                self.chat_text += char
+
+            if keys[pg.K_BACKSPACE]:
+                
+                # self.chat_once just clears 'Type here!' after initial type
+                if self.chatting:
+                    if self.chat_once:
+                        self.chat_once = False
+                        self.chat_text = ''
+                    else:
+                        self.chat_text = self.chat_text[:-1]
+        
+        except:
+            quit()
 
     def update(self):
-        # try:
         self.all_sprites.update()
-
-        # check for collision with platforms
-        # for player in self.players.values():
-        #     if player.vel.y > 0:
-        #         collision = pg.sprite.spritecollide(player, self.platforms, False)
-        #         if collision:
-        #             player.pos[1] = collision[0].rect.top + 1
-        #             player.vel[1] = 0
-
-        # self.updatePlayer()
-        
-        # except:
-        #     quit()
 
     # for consistently drawing the background and the sprites
     def draw(self):
-        # try:
-        # show the background
-        self.screen.blit(self.arena_bg, ORIGIN)
-        self.screen.blit(self.chat_bg, (700,0))
-        
-        # check method below
-        self.drawStatsBoard()
-        
-        # show all the sprites
-        self.all_sprites.draw(self.screen)
+        try:
+            # show the background
+            self.screen.blit(self.arena_bg, ORIGIN)
+            self.screen.blit(self.chat_bg, (700,0))
+            
+            # check method below
+            self.drawStatsBoard()
+            
+            # show all the sprites
+            self.all_sprites.draw(self.screen)
 
-        # write the player's name on top of the sprite
-        font = pg.font.Font(None, 20)
-        for player in self.players.values():
-            coors = (player.rect.left, player.rect.top-15)
-            text_surface = font.render((player.name), True, WHITE)
-            self.screen.blit(text_surface, coors)
+            # write the player's name on top of the sprite
+            font = pg.font.Font(None, 20)
+            for player in self.players.values():
+                coors = (player.rect.left, player.rect.top-15)
+                text_surface = font.render((player.name), True, WHITE)
+                self.screen.blit(text_surface, coors)
 
-        # show end game results
-        if len(self.winner) > 0 and not self.showed_end:
-            self.initialized = False
-            self.playing = False
+            # show end game results
+            if len(self.winner) > 0 and not self.showed_end:
+                self.initialized = False
+                self.playing = False
 
-            self.chat_messages = []
-            self.chat_messages.append('===== {} won this round! ====='.format(self.winner))
-            self.chat_messages.append("-> Press F1 to restart the game")
-            self.chat_messages.append('   * Everyone must press F1 to restart')
-            self.chat_messages.append('-> Press Esc to exit the game')
-            self.chat_messages.append('   * Recreating is not supported for now')
-            self.chat_messages.append('   * If you want to recreate a game:')
-            self.chat_messages.append('     Simply run Game.py <ip_address> again')
-            self.chat_messages.append('! ENJOY, you may still chat !')
-            self.chat_messages.append('======================================')
+                self.chat_messages = []
+                self.chat_messages.append('===== {} won this round! ====='.format(self.winner))
+                self.chat_messages.append("-> Press F1 to restart the game")
+                self.chat_messages.append('   * Everyone must press F1 to restart')
+                self.chat_messages.append('-> Press Esc to exit the game')
+                self.chat_messages.append('   * Recreating is not supported for now')
+                self.chat_messages.append('   * If you want to recreate a game:')
+                self.chat_messages.append('     Simply run Game.py <ip_address> again')
+                self.chat_messages.append('! ENJOY, you may still chat !')
+                self.chat_messages.append('======================================')
 
-            self.showed_end = True
+                self.showed_end = True
 
-        # show the input chat
-        font = pg.font.Font(None, 30)
-        text_surface = font.render(self.chat_text, True, WHITE)
-        self.screen.blit(text_surface, (760,644))
+            # show the input chat
+            font = pg.font.Font(None, 30)
+            text_surface = font.render(self.chat_text, True, WHITE)
+            self.screen.blit(text_surface, (760,644))
 
-        # show all the messages
-        font2 = pg.font.Font(None, 24)
-        for i in range(0,len(self.chat_messages)):
-            text_surface2 = font2.render(self.chat_messages[i], True, BLACK)
-            self.screen.blit(text_surface2, (730,95+(i*25)))
+            # show all the messages
+            font2 = pg.font.Font(None, 24)
+            for i in range(0,len(self.chat_messages)):
+                text_surface2 = font2.render(self.chat_messages[i], True, BLACK)
+                self.screen.blit(text_surface2, (730,95+(i*25)))
 
-        pg.display.flip()
-        
-        # except:
-        #     quit()
+            pg.display.flip()
+            
+        except:
+            quit()
 
     # board with the players' name and life
     def drawStatsBoard(self):

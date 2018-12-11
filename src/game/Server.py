@@ -302,8 +302,8 @@ while True:
             walk_c = payload['walk_c']
             move = payload['move']
 
-            # if float(yPos) > 670:
-            #     yPos = '30'
+            if float(yPos) > 670:
+                yPos = '30'
 
             players[name]['status'] = status
             players[name]['xPos'] = xPos

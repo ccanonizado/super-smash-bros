@@ -148,7 +148,7 @@ class Popo(pg.sprite.Sprite):
         self.pos += self.vel + 0.5 * self.acc
 
         self.rect = self.image.get_rect()
-        self.rect.midbottom = self.
+        self.rect.midbottom = self.pos
         
         if self.vel.y > 0:
             collision = pg.sprite.spritecollide(self, self.game.platforms, False)
