@@ -288,11 +288,10 @@ while True:
 
         # check if everyone has loaded
         elif action == 'CHECK_LOADED':
-            data = 'CHECK_LOADED '
+            data = 'NONE'
             if players_loaded == len(players):
+                data = 'CHECK_LOADED '                
                 data += 'TRUE'
-            else:
-                data += 'FALSE'
             data = str.encode(data)
 
         # increment restart_count
