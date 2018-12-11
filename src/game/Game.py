@@ -90,6 +90,7 @@ class Game:
         self.clock = pg.time.Clock()
         self.status = INTRO
         self.running = True # game is running
+        self.all_ready = False # checks if everyone is ready
         self.showed_end = False # checks if end game results have been showed
         self.initialized = False # initialized game in arena (with players)
         self.created_chat = False # created chat lobby for everyone to connect
@@ -137,6 +138,7 @@ class Game:
                 self.getStatus()
                 # once initialized - continuously update players and check for a winner
                 if self.initialized and self.playing:
+                    self.checkDisconnect()
                     self.checkWinner()
                     self.updatePlayer()
                     self.updateAllPlayers()
@@ -187,10 +189,18 @@ class Game:
 
             for event in pg.event.get():
                 # check for closing window
-                if event.type == pg.QUIT:
-                    self.running = False
+                if event.type == pg.QUIT:                    
+                    print("You quit in the middle of the game!")
+                    self.disconnectPlayer(self.curr_player)
+
                     if self.playing:
                         self.playing = False
+
+                    # if end game detected - quit other players as well
+                    if self.showed_end:
+                        self.quitGame()
+
+                    self.running = False
                     quit()
 
                 # majority of chat flow + attacks
@@ -487,6 +497,14 @@ class Game:
                             print('CHAT ERROR! Server might be down!')
                         self.created_chat = True
 
+                elif action == 'CHECK_DISCONNECT':
+                    if len(message) > 1:
+                        if message[1] in self.players:
+                            if self.playing:
+                                self.all_sprites.remove(self.players[message[1]])   
+                                self.enemy_sprites.remove(self.players[message[1]])
+                                self.players.pop(message[1])
+
                 elif action == 'QUIT_GAME':
                     print("Thank you for playing!")
                     self.running = False
@@ -503,11 +521,20 @@ class Game:
                 elif action == 'CHECK_WINNER':
                     self.winner = message[1]
 
+                elif action == 'CHECK_READY':
+                    if message[1] == 'TRUE':
+                        self.all_ready = True
+                    elif message[1] == 'FALSE':
+                        self.all_ready = False
+
                 elif action == 'UPDATE_ALL_PLAYERS':
                     message.pop(0)
                     message = ' '.join(message)
                     data = json.loads(message)
                     
+                    if(len(data) != len(self.players)):
+                        continue
+
                     for player in self.players.values():
                         name = player.name
                         status = data[name]['status']
@@ -536,6 +563,10 @@ class Game:
     def disconnectPlayer(self, name):
         message = 'DISCONNECT '
         message += name
+        self.send(message)
+
+    def checkDisconnect(self):
+        message = 'CHECK_DISCONNECT'
         self.send(message)
 
     def checkName(self, name):
@@ -622,7 +653,11 @@ class Game:
 
     def checkWinner(self):
         message = 'CHECK_WINNER'
-        self.send(message)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+        self.send(message)      
+
+    def checkReady(self):
+        message = 'CHECK_READY'
+        self.send(message)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 
 # main start of the program
 game = Game()

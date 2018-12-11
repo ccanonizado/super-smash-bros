@@ -30,13 +30,10 @@ class Intro:
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if start.isOver(pos):
                         self.game.status = START
-                        break
                     elif guide.isOver(pos):
                         self.game.status = GUIDE
-                        break
                     elif about.isOver(pos):
                         self.game.status = ABOUT
-                        break
 
                 # mouse hover
                 if event.type == pg.MOUSEMOTION:

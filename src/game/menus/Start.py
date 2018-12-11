@@ -74,9 +74,9 @@ class Start:
 
                 if event.type == pg.QUIT:
                     print("You quit in the middle of the game!")
-                    self.g.running = False
                     if enteredName:
                         self.g.disconnectPlayer(self.g.curr_player)
+                    self.g.running = False
                     quit()
                 
                 # mouse click
@@ -86,12 +86,10 @@ class Start:
                             self.g.status = INTRO
                             if enteredName:
                                 self.g.disconnectPlayer(self.g.curr_player)
-                            break
                         elif screen == 'no_name':
                             self.g.status = INTRO
                             if enteredName:
                                 self.g.disconnectPlayer(self.g.curr_player)
-                            break
                         elif screen == 'character':
                             screen = 'name'
                         elif screen == 'waiting':
@@ -164,7 +162,7 @@ class Start:
                                         print("NAME EXISTS! Enter a unique one!")
                             
                             else:
-                                if player_ready:
+                                if player_ready and self.g.all_ready:
                                     # initialize chat to create lobby
                                     self.g.chat = Chat(self.g)
                                     lobby_id = self.g.chat.createLobby(6).lobby_id
@@ -196,6 +194,7 @@ class Start:
                 self.g.screen.blit(ready.image, (ready.x, ready.y))
                 text_surface = font.render(str(self.g.player_count), True, WHITE)
                 self.g.screen.blit(text_surface,(700,440))
+                self.g.checkReady()
                 self.g.joinGame()
 
             if not player_ready:

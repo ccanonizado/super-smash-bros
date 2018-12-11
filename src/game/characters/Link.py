@@ -8,7 +8,7 @@ from images import *
 
 vec = pg.math.Vector2
 
-walkR = [liS1, liM1, liM2, liM3, liM4]
+walkR = [liS1, liM1, liM2, liM3, liM4, liM5, liM6, liM7, liM8, liM9, liM10]
 walkL = [pg.transform.flip(image, True, False) for image in walkR]
 standR = liS1
 standL = pg.transform.flip(standR, True, False)
@@ -80,7 +80,7 @@ class Link(pg.sprite.Sprite):
         # block any movement if player pressed 'Enter' to chat
         if not self.game.chatting and self.curr_player == self.name:
             if self.health > 0 and self.game.playing:
-                if self.walk_c == 4:
+                if self.walk_c == 10:
                     self.walk_c = 0 
 
                 if keys[pg.K_UP]:

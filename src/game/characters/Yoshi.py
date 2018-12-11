@@ -8,7 +8,7 @@ from images import *
 
 vec = pg.math.Vector2
 
-walkR = [yoS1, yoM1, yoM2, yoM3]
+walkR = [yoS1, yoM1, yoM2, yoM3, yoM4, yoM5, yoM6, yoM7, yoM8]
 walkL = [pg.transform.flip(image, True, False) for image in walkR]
 standR = yoS1
 standL = pg.transform.flip(standR, True, False)
@@ -80,7 +80,7 @@ class Yoshi(pg.sprite.Sprite):
         # block any movement if player pressed 'Enter' to chat
         if not self.game.chatting and self.curr_player == self.name:
             if self.health > 0 and self.game.playing:
-                if self.walk_c == 3:
+                if self.walk_c == 8:
                     self.walk_c = 0 
 
                 if keys[pg.K_UP]:

@@ -64,6 +64,12 @@ GET_STATUS
 CHECK_WINNER
 - for end game detection
 
+CHECK_READY
+- checks if everyone is ready
+
+CHECK_DISCONNECT
+- checks if there is someone who recently disconnected
+
 ======================================================================
 
 NOTE - for reference
@@ -115,6 +121,7 @@ players_ready = 0 # must be equal to len(players) to start
 restart_count = 0 # must be equal to len(players) to restart
 chat_lobby = '' # lobby_id to be broadcasted to everyone
 game_status = WAITING # check settings.py for all game statuses
+recent_disconnect = '' # name of player who recently disconnected
 
 print('Server is now up and running!')
 print('There must be 3-6 players ready before starting the game.')
@@ -143,10 +150,25 @@ while True:
             'move': 'stand'
         }
 
-    # remove player from players list
+    # remove player from players list and return player name
     elif action == 'DISCONNECT':
         print('{} has disconnected!'.format(message[1]))
         players.pop(message[1])
+        players_ready -= 1
+        if(players_ready) < 0:
+            players_ready = 0
+        restart_count = 0
+        recent_disconnect = message[1]
+
+        data = 'DISCONNECT '
+        data += message[1]
+        data = str.encode(data)
+
+    # returns name of player who recently disconnected
+    elif action == 'CHECK_DISCONNECT':
+        data = 'CHECK_DISCONNECT '
+        data += recent_disconnect
+        data = str.encode(data)
 
     # checks if name is in the players dict
     elif action == 'CHECK_NAME':
@@ -235,7 +257,7 @@ while True:
 
     # repeatedly send at the end of the game
     elif action == 'RESTART_GAME':
-        # action must be NONE if condition is not satisfied (line 233)
+        # action must be NONE if everyone is not yet ready to restart
         data = 'NONE'
         data = str.encode(data)
         if (restart_count % len(players)) == 0:
@@ -312,7 +334,7 @@ while True:
         print("NEW UPDATES:")
         data = 'QUIT_GAME'
         data = str.encode(data)
-        game_status = WAITING
+        game_status = QUIT
 
         # reset server data
         players = {}
@@ -345,6 +367,15 @@ while True:
         else:
             data = 'NONE'
             data = str.encode(data)
+
+    # returns true if everyone is ready - false if not
+    elif action == 'CHECK_READY':
+        data = 'CHECK_READY '
+        if players_ready == len(players):
+            data += 'TRUE'
+        else:
+            data += 'FALSE'
+        data = str.encode(data)
 
     # send the response back to the client
     if data:

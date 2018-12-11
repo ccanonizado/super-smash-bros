@@ -29,7 +29,6 @@ class Other:
                 if event.type == pg.MOUSEBUTTONDOWN:
                     if back.isOver(pos):
                         self.game.status = INTRO
-                        break
 
                 # mouse hover
                 if event.type == pg.MOUSEMOTION:

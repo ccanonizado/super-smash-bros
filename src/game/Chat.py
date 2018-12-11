@@ -87,9 +87,6 @@ class Chat:
 
 		connect = self.sendAndReceive(connect)
 
-		# run the thread for getting chat messages
-		Thread(target=self.receiveMessages).start()
-
 	def listPlayers(self):
 		players = self.packet.PlayerListPacket()
 		players.type = self.packet.PLAYER_LIST
@@ -114,4 +111,3 @@ class Chat:
 		# no parameters
 
 		self.sendAndReceive(disconnect)
-
