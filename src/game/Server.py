@@ -64,6 +64,12 @@ CHECK_WINNER
 CHECK_READY
 - checks if everyone is ready
 
+PLAYER_LOADED
+- one player loaded
+
+CHECK_LOADED
+- checks if everyone loaded 
+
 CHECK_DISCONNECT
 - checks if there is someone who recently disconnected
 
@@ -115,6 +121,7 @@ s.bind(SERVER)
 
 players = {} # players dict with attributes
 init_players = {} # copy of initial players (for restarting)
+players_loaded = 0 # must be equal to len(players) to continue updating
 players_ready = 0 # must be equal to len(players) to start
 restart_count = 0 # must be equal to len(players) to restart
 chat_lobby = '' # lobby_id to be broadcasted to everyone
@@ -270,6 +277,20 @@ while True:
                     data = str.encode(data)
                     game_status = GAME
 
+        # increment player_loaded:
+        elif action == 'PLAYER_LOADED':
+            print('{} has successfully loaded the game!'.format(message[1]))
+            players_loaded += 1
+
+        # check if everyone has loaded
+        elif action == 'CHECK_LOADED':
+            data = 'CHECK_LOADED '
+            if players_loaded == len(players):
+                data += 'TRUE'
+            else:
+                data += 'FALSE'
+            data = str.encode(data)
+
         # increment restart_count
         elif action == 'RESTART_REQUEST':
             restart_count += 1
@@ -351,6 +372,7 @@ while True:
             # reset server data
             players = {}
             init_players = {}
+            players_loaded = 0
             players_ready = 0
             restart_count = 0
             chat_lobby = ''

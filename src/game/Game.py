@@ -90,6 +90,7 @@ class Game:
         self.clock = pg.time.Clock()
         self.status = INTRO
         self.running = True # game is running
+        self.playing = False # player is inside the arena
         self.all_ready = False # checks if everyone is ready
         self.showed_end = False # checks if end game results have been showed
         self.initialized = False # initialized game in arena (with players)
@@ -136,6 +137,10 @@ class Game:
             elif self.status == GAME:
                 self.winner = ''
                 self.getStatus()
+
+                if not self.playing and not self.showed_end:
+                    self.checkLoaded()
+
                 # once initialized - continuously update players and check for a winner
                 if self.initialized and self.playing:
                     self.checkDisconnect()
@@ -422,8 +427,8 @@ class Game:
                                 self.enemy_sprites.add(player)
                         
                         self.initialized = True
+                        self.playerLoaded(self.curr_player)
                         self.status = GAME
-                        self.playing = True
 
                 elif action == 'RESTART_GAME':
                     message.pop(0)
@@ -529,6 +534,10 @@ class Game:
                     elif message[1] == 'FALSE':
                         self.all_ready = False
 
+                elif action == 'CHECK_LOADED':
+                    if message[1] == 'TRUE':
+                        self.playing = True
+
                 elif action == 'UPDATE_ALL_PLAYERS':
                     message.pop(0)
                     message = ' '.join(message)
@@ -598,6 +607,15 @@ class Game:
 
     def startGame(self):
         message = 'START_GAME'
+        self.send(message)
+
+    def playerLoaded(self, name):
+        message = 'PLAYER_LOADED '
+        message += name
+        self.send(message)
+
+    def checkLoaded(self):
+        message = 'CHECK_LOADED'
         self.send(message)
 
     def joinGame(self):
