@@ -235,27 +235,27 @@ while True:
                         # for positioning them correctly in the game arena
                         if i == 0:
                             player['xPos'] = '157'
-                            player['yPos'] = '0'
+                            player['yPos'] = '480'
                             player['direc'] = 'right'
                         elif i == 1:
                             player['xPos'] = '534'
-                            player['yPos'] = '0'
+                            player['yPos'] = '480'
                             player['direc'] = 'left'
                         elif i == 2:
                             player['xPos'] = '345'
-                            player['yPos'] = '0'
+                            player['yPos'] = '260'
                             player['direc'] = 'right'
                         elif i == 3:
                             player['xPos'] = '157'
-                            player['yPos'] = '600'
+                            player['yPos'] = '680'
                             player['direc'] = 'right'
                         elif i == 4:
                             player['xPos'] = '534'
-                            player['yPos'] = '600'
+                            player['yPos'] = '680'
                             player['direc'] = 'left'
                         elif i == 5:
                             player['xPos'] = '345'
-                            player['yPos'] = '400'
+                            player['yPos'] = '680'
                             player['direc'] = 'left'
                         i += 1
 

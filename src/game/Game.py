@@ -143,7 +143,7 @@ class Game:
                     self.updatePlayer()
                     self.updateAllPlayers()
                     self.checkDisconnect()
-                    # self.checkWinner()
+                    self.checkWinner()
 
                 self.clock.tick(FPS)
                 self.events()
