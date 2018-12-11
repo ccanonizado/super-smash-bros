@@ -205,7 +205,7 @@ while True:
 
         # starts game and sends to all player addresses
         elif action == 'START_GAME':
-            if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
+            if players_ready == len(players) and len(players) >= 3 and len(players) <= 6:
                 if not game_started:
                     print("Initialized Game!")
                     game_started = True
