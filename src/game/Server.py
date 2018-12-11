@@ -223,7 +223,7 @@ while True:
 
         # starts the game given everyone is ready and players >= 3 and players <= 6
         elif action == 'START_GAME':
-            if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
+            if players_ready == len(players) and len(players) >= 3 and len(players) <= 6:
                 if not game_started:
                     print("Initialized Game!")
                     game_started = True
@@ -277,10 +277,18 @@ while True:
                     data = str.encode(data)
                     game_status = GAME
 
+            else:
+                print("Not enough players! 3-6 are needed to start.")
+
         # increment player_loaded:
         elif action == 'PLAYER_LOADED':
             print('{} has successfully loaded the game!'.format(message[1]))
-            players_loaded += 1
+            players[message[1]]['status'] = 'loaded'
+
+            players_loaded = 0
+            for player in players.values():
+                if player['status'] == 'loaded':
+                    players_loaded += 1
 
         # check if everyone has loaded
         elif action == 'CHECK_LOADED':
@@ -408,7 +416,7 @@ while True:
         # returns true if everyone is ready - false if not
         elif action == 'CHECK_READY':
             data = 'CHECK_READY '
-            if players_ready == len(players):
+            if players_ready == len(players) and players_ready >= 3 and players_ready <= 6:
                 data += 'TRUE'
             else:
                 data += 'FALSE'

@@ -139,6 +139,7 @@ class Game:
                 self.getStatus()
 
                 if not self.playing and not self.showed_end:
+                    self.playerLoaded(self.curr_player)
                     self.checkLoaded()
 
                 # once initialized - continuously update players and check for a winner
@@ -427,7 +428,6 @@ class Game:
                                 self.enemy_sprites.add(player)
                         
                         self.initialized = True
-                        self.playerLoaded(self.curr_player)
                         self.status = GAME
 
                 elif action == 'RESTART_GAME':
