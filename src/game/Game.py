@@ -509,6 +509,7 @@ class Game:
                 elif action == 'QUIT_GAME':
                     print("Thank you for playing!")
                     self.running = False
+                    self.s.close()
                     pg.quit()
                     quit()
 
