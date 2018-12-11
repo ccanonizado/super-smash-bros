@@ -77,12 +77,11 @@ class Mario(pg.sprite.Sprite):
         self.acc = vec(0 ,0.5)
         keys = pg.key.get_pressed()
 
-        # for player in self.players.values():
-        #     if player.vel.y > 0:
-        #         collision = pg.sprite.spritecollide(player, self.platforms, False)
-        #         if collision:
-        #             player.pos[1] = collision[0].rect.top + 1
-        #             player.vel[1] = 0
+        if self.vel.y > 0:
+            collision = pg.sprite.spritecollide(self, self.game.platforms, False)
+            if collision:
+                self.pos[1] = collision[0].rect.top + 1
+                self.vel[1] = 0
 
         # block any movement if player pressed 'Enter' to chat
         if not self.game.chatting and self.curr_player == self.name:
@@ -158,9 +157,9 @@ class Mario(pg.sprite.Sprite):
         self.rect.midbottom = self.pos
 
         # if self.vel.y > 0:
-        #     collision = pg.sprite.spritecollide(self, self.platforms, False)
+        #     collision = pg.sprite.spritecollide(self, self.game.platforms, False)
         #     if collision:
         #         self.pos[1] = collision[0].rect.top + 1
         #         self.vel[1] = 0
 
-        self.game.updatePlayer()
+        # self.game.updatePlayer()

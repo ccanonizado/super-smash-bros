@@ -150,4 +150,4 @@ class Link(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.midbottom = self.pos
 
-        self.game.updatePlayer()
+        # self.game.updatePlayer()
