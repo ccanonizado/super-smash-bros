@@ -58,16 +58,9 @@ class Start:
                 self.drawStats()
             elif screen == 'waiting':
                 self.g.screen.blit(START_WAITING_BG, ORIGIN)
-                self.g.getPlayersReadyCount()
                 text_surface = font.render(str(self.g.player_count), True, WHITE)
                 self.g.screen.blit(text_surface,(700,445))
                 
-                self.g.checkReady()
-
-                if player_ready:
-                    self.g.editPlayerStatus(self.g.curr_player, 'ready')
-                    # self.g.joinGame()
-
             if screen == 'name' or screen == 'no_name':
                 if not self.g.name_available:
                     # allow changing the name to player's own name
@@ -169,9 +162,8 @@ class Start:
                                         print("NAME EXISTS! Enter a unique one!")
                             
                             else:
-                                if player_ready and self.g.all_ready:
-                                    # self.g.startGame()
-                                    pass
+                                if player_ready:
+                                    self.g.startGame()
 
                         else:
                             # limit character length for the screen

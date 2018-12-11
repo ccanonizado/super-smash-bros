@@ -137,7 +137,6 @@ class Game:
 
             elif self.status == GAME:
                 self.winner = ''
-                self.getStatus()
 
                 # once initialized - continuously update players and check for a winner
                 if self.initialized and self.playing:
@@ -181,9 +180,6 @@ class Game:
 
     def events(self):
         # try:
-        if self.restart_request and self.showed_end:
-            self.restartGame()
-
         keys = pg.key.get_pressed()
 
         # once player enters game screen - show initial chat
@@ -197,12 +193,12 @@ class Game:
                 print("You quit in the middle of the game!")
                 self.disconnectPlayer(self.curr_player)
 
-                if self.playing:
-                    self.playing = False
-
                 # if end game detected - quit other players as well
                 if self.showed_end:
                     self.quitGame()
+
+                if self.playing:
+                    self.playing = False
 
                 self.running = False
                 self.s.close()
@@ -389,7 +385,6 @@ class Game:
 
                 # instantiate all the players in the arena
                 elif action == 'START_GAME':
-                    print("HELLO")
                     if not self.initialized:
                         message.pop(0)
                         message = ' '.join(message)
@@ -480,6 +475,9 @@ class Game:
                         if self.curr_player != n:
                             self.enemy_sprites.add(player)
 
+                    self.showed_end = False
+                    self.restart_request = False
+
                     self.chat_messages = []
                     self.chat_messages.append('=========== GAME RESTART ===========')
                     self.chat_messages.append('Best of luck - may the best player win!')
@@ -489,8 +487,6 @@ class Game:
                     self.status = GAME
                     self.playing = True
                     self.initialized = True
-                    self.showed_end = False
-                    self.restart_request = False
 
                 elif action == 'JOIN_CHAT':
                     if not self.created_chat:
@@ -520,13 +516,6 @@ class Game:
                     self.s.close()
                     pg.quit()
                     quit()
-
-                elif action == 'GET_STATUS':
-                    if int(message[1]) == QUIT:
-                        print("Thank you for playing!")
-                        self.running = False
-                        pg.quit()
-                        quit()
 
                 elif action == 'CHECK_WINNER':
                     self.winner = message[1]
@@ -600,16 +589,8 @@ class Game:
         message += name + ' ' + status
         self.send(message)
 
-    def getPlayersReadyCount(self):
-        message = 'PLAYERS_READY'
-        self.send(message)
-
     def startGame(self):
         message = 'START_GAME'
-        self.send(message)
-
-    def joinGame(self):
-        message = 'JOIN_GAME'
         self.send(message)
 
     def joinChatLobby(self):
@@ -644,26 +625,14 @@ class Game:
     def restartRequest(self):
         message = 'RESTART_REQUEST'
         self.send(message)
-
-    def restartGame(self):
-        message = 'RESTART_GAME'
-        self.send(message)
-
+        
     def quitGame(self):
         message = 'QUIT_GAME'
         self.send(message)
 
-    def getStatus(self):
-        message = 'GET_STATUS'
-        self.send(message)     
-
     def checkWinner(self):
         message = 'CHECK_WINNER'
-        self.send(message)      
-
-    def checkReady(self):
-        message = 'CHECK_READY'
-        self.send(message)            
+        self.send(message)           
 
     # NOTE - for the full API of the requests - please refer to Server.py                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 
