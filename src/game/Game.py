@@ -432,6 +432,7 @@ class Game:
                         self.initialized = True
                         self.playerLoaded(self.curr_player)
                         self.status = GAME
+                        self.playing = True
 
                 elif action == 'RESTART_GAME':
                     message.pop(0)
