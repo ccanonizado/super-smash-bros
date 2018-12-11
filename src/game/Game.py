@@ -479,9 +479,7 @@ class Game:
                 # check if game has started - if it has started - join
                 elif action == 'JOIN_GAME':
                     if int(message[1]) == GAME:
-                        self.playing = True
                         self.startGame()
-                        self.status = GAME                        
                         self.joinChatLobby()
 
                 elif action == 'JOIN_CHAT':

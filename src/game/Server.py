@@ -204,10 +204,10 @@ while True:
             print('{} is now {}'.format(message[1], message[2]))
             players[message[1]]['status'] = message[2]
 
-            if message[2] == 'ready':
-                players_ready += 1
-            elif message[2] == 'unready':
-                players_ready -= 1
+            players_ready = 0
+            for player in players.values():
+                if player['status'] == 'ready':
+                    players_ready += 1
 
         # return number of players ready
         elif action == 'PLAYERS_READY':

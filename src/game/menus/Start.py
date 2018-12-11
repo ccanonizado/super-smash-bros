@@ -63,7 +63,10 @@ class Start:
                 self.g.screen.blit(text_surface,(700,445))
                 
                 self.g.checkReady()
-                self.g.joinGame()
+
+                if player_ready:
+                    self.g.editPlayerStatus(self.g.curr_player, 'ready')
+                    self.g.joinGame()
 
             if screen == 'name' or screen == 'no_name':
                 if not self.g.name_available:
