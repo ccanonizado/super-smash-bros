@@ -116,12 +116,8 @@ class Start:
                             screen = 'waiting'
 
                     if screen == 'waiting':
-                        if ready.isOver(pos):
-                            if ready.clicked:
-                                self.g.editPlayerStatus(self.g.curr_player, 'unready')
-                                player_ready = False
-                                ready.click()
-                            else:
+                        if not player_ready:
+                            if ready.isOver(pos):
                                 self.g.editPlayerStatus(self.g.curr_player, 'ready')
                                 player_ready = True
                                 ready.click()
@@ -137,7 +133,8 @@ class Start:
                         nana.isOver(pos, 'nana')
                         link.isOver(pos, 'link')
                     if screen == 'waiting':
-                        ready.isOver(pos)
+                        if not player_ready:
+                            ready.isOver(pos)
 
                 if event.type == pg.KEYDOWN:
                     if screen == 'name' or screen == 'no_name' or screen == 'waiting':
@@ -163,11 +160,6 @@ class Start:
                             
                             else:
                                 if player_ready and self.g.all_ready:
-                                    # initialize chat to create lobby
-                                    self.g.chat = Chat(self.g)
-                                    lobby_id = self.g.chat.createLobby(6).lobby_id
-                                    self.g.createChatLobby(lobby_id)
-
                                     self.g.startGame()
 
                         else:

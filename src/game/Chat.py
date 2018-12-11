@@ -21,7 +21,7 @@ PORT = 80
 BUFFER = 1024
 
 class Chat:
-	def __init__(self, game):
+	def __init__(self, game='none'):
 		self.g = game
 		self.packet = packet
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

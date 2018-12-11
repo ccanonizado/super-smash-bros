@@ -602,11 +602,6 @@ class Game:
         message = 'JOIN_GAME'
         self.send(message)
 
-    def createChatLobby(self, lobby_id):
-        message ='CREATE_CHAT '
-        message += str(lobby_id)
-        self.send(message)
-
     def joinChatLobby(self):
         message = 'JOIN_CHAT'
         self.send(message)
