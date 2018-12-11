@@ -148,6 +148,7 @@ class Game:
                     self.checkWinner()
                     self.updatePlayer()
                     self.updateAllPlayers()
+                    
                 self.clock.tick(FPS)
                 self.events()
                 self.update()
