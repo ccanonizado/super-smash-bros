@@ -69,8 +69,8 @@ print('UPDATES (errors will show up here if ever):')
 
 # server parameters
 HOST = sys.argv[1]
-PORT = 10000
-BUFFER = 1024
+PORT = 8000
+BUFFER = 4096
 SERVER = (HOST, PORT)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

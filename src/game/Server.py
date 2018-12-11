@@ -105,8 +105,8 @@ else:
     HOST = sys.argv[1]
 
 # server parameters
-PORT = 10000
-BUFFER = 1024
+PORT = 8000
+BUFFER = 4096
 SERVER = (HOST, PORT)
 
 # binding the socket to the port
@@ -128,264 +128,270 @@ print('Just look here for updates whenever the client "Game.py" does something.'
 print()
 print('UPDATES:')
 
+message_count = 0
+
 # once server receives something - check API - update - then return
 while True:
     data, address = s.recvfrom(BUFFER)
 
-    message = data.decode().split()
-    action = message[0] # first message is the action
+    if data:
+        message = data.decode().split()
+        action = message[0] # first message is the action
 
-    # add player to player list and add initial character values
-    if action == 'CONNECT':
-        print('{} has connected!'.format(message[1]))
-        players[message[1]] = {
-            'character': 'none',
-            'status': 'unready',
-            'health': '100',
-            'xPos': '0',
-            'yPos': '0',
-            'direc': 'right',
-            'walk_c': '0',
-            'move': 'stand'
-        }
+        # add player to player list and add initial character values
+        if action == 'CONNECT':
+            print('{} has connected!'.format(message[1]))
+            players[message[1]] = {
+                'character': 'none',
+                'status': 'unready',
+                'health': '100',
+                'xPos': '0',
+                'yPos': '0',
+                'direc': 'right',
+                'walk_c': '0',
+                'move': 'stand'
+            }
 
-    # remove player from players list and return player name
-    elif action == 'DISCONNECT':
-        print('{} has disconnected!'.format(message[1]))
-        players.pop(message[1])
-        players_ready -= 1
-        if(players_ready) < 0:
-            players_ready = 0
-        restart_count = 0
-        recent_disconnect = message[1]
-
-        # remove player from initial list - for the restart
-        if message[1] in init_players:
-            init_players.pop(message[1])
-
-        data = 'DISCONNECT '
-        data += message[1]
-        data = str.encode(data)
-
-    # returns name of player who recently disconnected
-    elif action == 'CHECK_DISCONNECT':
-        data = 'CHECK_DISCONNECT '
-        data += recent_disconnect
-        data = str.encode(data)
-
-    # checks if name is in the players dict
-    elif action == 'CHECK_NAME':
-        data = 'CHECK_NAME '
-        if len(message) == 1:
-            data += 'free'
-        else:
-            if message[1] in players:
-                data += 'taken'
-            else:
-                data += 'free'
-        data = str.encode(data)
-
-    # change if name of player passed is different
-    elif action == 'EDIT_NAME':
-        if message[1] != message[2]:
-            print('{} has changed name to {}'.format(message[1], message[2]))
-            players[message[2]] = players.pop(message[1])
-
-    # change value of the character which is initially 'none'
-    elif action == 'EDIT_CHARACTER':
-        print('{} picked {}'.format(message[1], message[2]))
-        players[message[1]]['character'] = message[2]
-
-    # change value of the player's status (check API for more)
-    elif action == 'EDIT_STATUS':
-        print('{} is now {}'.format(message[1], message[2]))
-        players[message[1]]['status'] = message[2]
-
-        if message[2] == 'ready':
-            players_ready += 1
-        elif message[2] == 'unready':
+        # remove player from players list and return player name
+        elif action == 'DISCONNECT':
+            print('{} has disconnected!'.format(message[1]))
+            players.pop(message[1])
             players_ready -= 1
+            if(players_ready) < 0:
+                players_ready = 0
+            restart_count = 0
+            recent_disconnect = message[1]
 
-    # return number of players ready
-    elif action == 'PLAYERS_READY':
-        data = 'PLAYERS_READY '
-        data += str(players_ready)
-        data = str.encode(data)
+            # remove player from initial list - for the restart
+            if message[1] in init_players:
+                init_players.pop(message[1])
 
-    # starts the game given everyone is ready and players >= 3 and players <= 6
-    elif action == 'START_GAME':
-        if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
-            if not game_started:
-                game_started = True
-
-                # store chat
-                chat = Chat()
-                chat_lobby = chat.createLobby(6).lobby_id
-
-                print("Created chat lobby: {}".format(chat_lobby))
-                print("Players joined the lobby!")
-                print("Game is now running.")
-                
-                i = 0
-                for player in players.values():
-                    # these x and y values are hardcoded depending on the amount of players
-                    # for positioning them correctly in the game arena
-                    if i == 0:
-                        player['xPos'] = '157'
-                        player['yPos'] = '0'
-                        player['direc'] = 'right'
-                    elif i == 1:
-                        player['xPos'] = '534'
-                        player['yPos'] = '0'
-                        player['direc'] = 'left'
-                    elif i == 2:
-                        player['xPos'] = '345'
-                        player['yPos'] = '0'
-                        player['direc'] = 'right'
-                    elif i == 3:
-                        player['xPos'] = '157'
-                        player['yPos'] = '600'
-                        player['direc'] = 'right'
-                    elif i == 4:
-                        player['xPos'] = '534'
-                        player['yPos'] = '600'
-                        player['direc'] = 'left'
-                    elif i == 5:
-                        player['xPos'] = '345'
-                        player['yPos'] = '400'
-                        player['direc'] = 'left'
-                    i += 1
-
-                # create a copy of initial players if ever they want to request restart
-                init_players = copy.deepcopy(players)
-
-            if len(players) > 0:
-                data = 'START_GAME '
-                data += json.dumps(players)
-                data = str.encode(data)
-                game_status = GAME
-
-    # increment restart_count
-    elif action == 'RESTART_REQUEST':
-        restart_count += 1
-
-    # repeatedly send at the end of the game
-    elif action == 'RESTART_GAME':
-        # action must be NONE if everyone is not yet ready to restart
-        data = 'NONE'
-        data = str.encode(data)
-        if (restart_count % len(players)) == 0:
-
-            # replace current players with the initial ones
-            players = copy.deepcopy(init_players)
-
-            data = 'RESTART_GAME '
-            data += json.dumps(init_players)
+            data = 'DISCONNECT '
+            data += message[1]
             data = str.encode(data)
-            game_status = GAME
-    
-    # simply returns game status - client will evaluate
-    elif action == 'JOIN_GAME':
-        data = 'JOIN_GAME '
-        data += str(game_status)
-        data = str.encode(data)
 
-    # if lobby is created - server broadcasts lobby_id
-    elif action == 'JOIN_CHAT':
-        data = 'JOIN_CHAT '
-        data += str(chat_lobby)
-        data = str.encode(data)
+        # returns name of player who recently disconnected
+        elif action == 'CHECK_DISCONNECT':
+            data = 'CHECK_DISCONNECT '
+            data += recent_disconnect
+            data = str.encode(data)
 
-    # update single player
-    elif action == 'UPDATE_PLAYER':
-        message.pop(0) # remove action
-        message = ' '.join(message)
-        payload = json.loads(message)
-
-        name = payload['name']
-        status = payload['status']
-        xPos = payload['xPos']
-        yPos = payload['yPos']
-        direc = payload['direc']
-        walk_c = payload['walk_c']
-        move = payload['move']
-
-        players[name]['status'] = status
-        players[name]['xPos'] = xPos
-        players[name]['yPos'] = yPos
-        players[name]['direc'] = direc
-        players[name]['walk_c'] = walk_c
-        players[name]['move'] = move
-    
-    # broadcast all player updates
-    elif action == 'UPDATE_ALL_PLAYERS':
-        data = 'UPDATE_ALL_PLAYERS '
-        data += json.dumps(players)
-        data = str.encode(data)
-
-    # similar to update player but for decreasing the health
-    elif action == 'ATTACK_PLAYER':
-        health = float(players[message[1]]['health'])
-        new_health = health - float(message[2])
-        players[message[1]]['health'] = str(new_health)
-        players[message[1]]['move'] = message[3]
-
-        # health cannot be less than 0
-        if float(players[message[1]]['health']) < 0:
-            players[message[1]]['health'] = '0'
-
-    # changes game status to QUIT
-    elif action == 'QUIT_GAME':
-        print('One player quit! Resetting server data.')
-        print()
-        print("NEW UPDATES:")
-        data = 'QUIT_GAME'
-        data = str.encode(data)
-        game_status = QUIT
-
-        # reset server data
-        players = {}
-        init_players = {}
-        players_ready = 0
-        restart_count = 0
-        chat_lobby = ''
-        game_started = False
-        game_status = WAITING
-        recent_disconnect = ''
-
-    # consistently returns the game status
-    elif action == 'GET_STATUS':
-        data = 'GET_STATUS '
-        data += str(game_status)
-        data = str.encode(data)
-
-    #end game detection
-    elif action == 'CHECK_WINNER':
-        alive_count = len(players)
-        alive = ''
-        for key, value in players.items():
-            if float(value['health']) == 0:
-                alive_count -= 1
+        # checks if name is in the players dict
+        elif action == 'CHECK_NAME':
+            data = 'CHECK_NAME '
+            if len(message) == 1:
+                data += 'free'
             else:
-                alive = key
-
-        # if there is a winner - return the player's name
-        if alive_count <= 1:
-            data = 'CHECK_WINNER '
-            data += alive
+                if message[1] in players:
+                    data += 'taken'
+                else:
+                    data += 'free'
             data = str.encode(data)
-        else:
+
+        # change if name of player passed is different
+        elif action == 'EDIT_NAME':
+            if message[1] != message[2]:
+                print('{} has changed name to {}'.format(message[1], message[2]))
+                players[message[2]] = players.pop(message[1])
+
+        # change value of the character which is initially 'none'
+        elif action == 'EDIT_CHARACTER':
+            print('{} picked {}'.format(message[1], message[2]))
+            players[message[1]]['character'] = message[2]
+
+        # change value of the player's status (check API for more)
+        elif action == 'EDIT_STATUS':
+            print('{} is now {}'.format(message[1], message[2]))
+            players[message[1]]['status'] = message[2]
+
+            if message[2] == 'ready':
+                players_ready += 1
+            elif message[2] == 'unready':
+                players_ready -= 1
+
+        # return number of players ready
+        elif action == 'PLAYERS_READY':
+            data = 'PLAYERS_READY '
+            data += str(players_ready)
+            data = str.encode(data)
+
+        # starts the game given everyone is ready and players >= 3 and players <= 6
+        elif action == 'START_GAME':
+            if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
+                if not game_started:
+                    print("Initialized Game!")
+                    game_started = True
+
+                    try:
+                        chat = Chat()
+                        chat_lobby = chat.createLobby(6).lobby_id
+                    except:
+                        print("CHAT ERROR! Server might be down.")
+
+                    print("Created chat lobby: {}".format(chat_lobby))
+                    print("Players joined the lobby!")
+                    print("Game is now running.")
+
+                    i = 0
+                    for player in players.values():
+                        # these x and y values are hardcoded depending on the amount of players
+                        # for positioning them correctly in the game arena
+                        if i == 0:
+                            player['xPos'] = '157'
+                            player['yPos'] = '0'
+                            player['direc'] = 'right'
+                        elif i == 1:
+                            player['xPos'] = '534'
+                            player['yPos'] = '0'
+                            player['direc'] = 'left'
+                        elif i == 2:
+                            player['xPos'] = '345'
+                            player['yPos'] = '0'
+                            player['direc'] = 'right'
+                        elif i == 3:
+                            player['xPos'] = '157'
+                            player['yPos'] = '600'
+                            player['direc'] = 'right'
+                        elif i == 4:
+                            player['xPos'] = '534'
+                            player['yPos'] = '600'
+                            player['direc'] = 'left'
+                        elif i == 5:
+                            player['xPos'] = '345'
+                            player['yPos'] = '400'
+                            player['direc'] = 'left'
+                        i += 1
+
+                    # create a copy of initial players if ever they want to request restart
+                    init_players = copy.deepcopy(players)
+
+                if len(players) > 0:
+                    data = 'START_GAME '
+                    data += json.dumps(players)
+                    data = str.encode(data)
+                    game_status = GAME
+
+        # increment restart_count
+        elif action == 'RESTART_REQUEST':
+            restart_count += 1
+
+        # repeatedly send at the end of the game
+        elif action == 'RESTART_GAME':
+            # action must be NONE if everyone is not yet ready to restart
             data = 'NONE'
             data = str.encode(data)
+            if (restart_count % len(players)) == 0:
 
-    # returns true if everyone is ready - false if not
-    elif action == 'CHECK_READY':
-        data = 'CHECK_READY '
-        if players_ready == len(players):
-            data += 'TRUE'
-        else:
-            data += 'FALSE'
-        data = str.encode(data)
+                # replace current players with the initial ones
+                players = copy.deepcopy(init_players)
+
+                data = 'RESTART_GAME '
+                data += json.dumps(init_players)
+                data = str.encode(data)
+                game_status = GAME
+        
+        # simply returns game status - client will evaluate
+        elif action == 'JOIN_GAME':
+            data = 'JOIN_GAME '
+            data += str(game_status)
+            data = str.encode(data)
+
+        # if lobby is created - server broadcasts lobby_id
+        elif action == 'JOIN_CHAT':
+            data = 'JOIN_CHAT '
+            data += str(chat_lobby)
+            data = str.encode(data)
+
+        # update single player
+        elif action == 'UPDATE_PLAYER':
+            message.pop(0) # remove action
+            message = ' '.join(message)
+            payload = json.loads(message)
+
+            name = payload['name']
+            status = payload['status']
+            xPos = payload['xPos']
+            yPos = payload['yPos']
+            direc = payload['direc']
+            walk_c = payload['walk_c']
+            move = payload['move']
+
+            players[name]['status'] = status
+            players[name]['xPos'] = xPos
+            players[name]['yPos'] = yPos
+            players[name]['direc'] = direc
+            players[name]['walk_c'] = walk_c
+            players[name]['move'] = move
+        
+        # broadcast all player updates
+        elif action == 'UPDATE_ALL_PLAYERS':
+            data = 'UPDATE_ALL_PLAYERS '
+            data += json.dumps(players)
+            data = str.encode(data)
+
+        # similar to update player but for decreasing the health
+        elif action == 'ATTACK_PLAYER':
+            health = float(players[message[1]]['health'])
+            new_health = health - float(message[2])
+            players[message[1]]['health'] = str(new_health)
+            players[message[1]]['move'] = message[3]
+
+            # health cannot be less than 0
+            if float(players[message[1]]['health']) < 0:
+                players[message[1]]['health'] = '0'
+
+        # changes game status to QUIT
+        elif action == 'QUIT_GAME':
+            print('One player quit! Resetting server data.')
+            print()
+            print("NEW UPDATES:")
+            data = 'QUIT_GAME'
+            data = str.encode(data)
+            game_status = QUIT
+
+            # reset server data
+            players = {}
+            init_players = {}
+            players_ready = 0
+            restart_count = 0
+            chat_lobby = ''
+            game_started = False
+            game_status = WAITING
+            recent_disconnect = ''
+
+        # consistently returns the game status
+        elif action == 'GET_STATUS':
+            data = 'GET_STATUS '
+            data += str(game_status)
+            data = str.encode(data)
+
+        #end game detection
+        elif action == 'CHECK_WINNER':
+            alive_count = len(players)
+            alive = ''
+            for key, value in players.items():
+                if float(value['health']) == 0:
+                    alive_count -= 1
+                else:
+                    alive = key
+
+            # if there is a winner - return the player's name
+            if alive_count <= 1:
+                data = 'CHECK_WINNER '
+                data += alive
+                data = str.encode(data)
+            else:
+                data = 'NONE'
+                data = str.encode(data)
+
+        # returns true if everyone is ready - false if not
+        elif action == 'CHECK_READY':
+            data = 'CHECK_READY '
+            if players_ready == len(players):
+                data += 'TRUE'
+            else:
+                data += 'FALSE'
+            data = str.encode(data)
 
     # send the response back to the client
     if data:

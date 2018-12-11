@@ -46,8 +46,8 @@ class Start:
 
         while self.g.status == START:
 
-            # repeatedly check if the name is available
-            self.g.checkName(self.g.curr_player)
+            if screen == 'name' or screen == 'no_name':
+                self.g.checkName(self.g.curr_player)
 
             if screen == 'name':
                 self.g.screen.blit(START_NAME_BG, ORIGIN)
@@ -58,6 +58,12 @@ class Start:
                 self.drawStats()
             elif screen == 'waiting':
                 self.g.screen.blit(START_WAITING_BG, ORIGIN)
+                self.g.getPlayersReadyCount()
+                text_surface = font.render(str(self.g.player_count), True, WHITE)
+                self.g.screen.blit(text_surface,(700,445))
+                
+                self.g.checkReady()
+                self.g.joinGame()
 
             if screen == 'name' or screen == 'no_name':
                 if not self.g.name_available:
@@ -183,12 +189,7 @@ class Start:
                 self.g.screen.blit(link.image, (link.x, link.y))
 
             elif screen == 'waiting':
-                self.g.getPlayersReadyCount()
                 self.g.screen.blit(ready.image, (ready.x, ready.y))
-                text_surface = font.render(str(self.g.player_count), True, WHITE)
-                self.g.screen.blit(text_surface,(700,440))
-                self.g.checkReady()
-                self.g.joinGame()
 
             if not player_ready:
                 self.g.screen.blit(back.image, (back.x, back.y))
