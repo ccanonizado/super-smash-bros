@@ -311,14 +311,11 @@ while True:
             players[name]['walk_c'] = walk_c
             players[name]['move'] = move
 
+        # updates all players
+        elif action == 'UPDATE_ALL_PLAYERS':
             data = 'UPDATE_ALL_PLAYERS '
             data += json.dumps(players)
             data = str.encode(data)
-
-            for player in players.values():
-                s.sendto(data, player['address'])
-
-            continue
 
         # similar to update player but for decreasing the health
         elif action == 'ATTACK_PLAYER':
