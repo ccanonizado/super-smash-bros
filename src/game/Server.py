@@ -123,6 +123,7 @@ chat_lobby = '' # lobby_id to be broadcasted to everyone
 game_status = WAITING # check settings.py for all game statuses
 recent_disconnect = '' # name of player who recently disconnected
 
+
 print('Server is now up and running!')
 print('There must be 3-6 players ready before starting the game.')
 print('Just look here for updates whenever the client "Game.py" does something.')
@@ -159,6 +160,10 @@ while True:
             players_ready = 0
         restart_count = 0
         recent_disconnect = message[1]
+
+        # remove player from initial list - for the restart
+        if message[1] in init_players:
+            init_players.pop(message[1])
 
         data = 'DISCONNECT '
         data += message[1]
@@ -209,9 +214,9 @@ while True:
         data += str(players_ready)
         data = str.encode(data)
 
-    # check line 184 for the condition for the game to start
+    # starts the game given everyone is ready and players >= 3 and players <= 6
     elif action == 'START_GAME':
-        if players_ready == len(players) and len(players) >= 1:
+        if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
             data = 'START_GAME '
             
             i = 0
@@ -244,7 +249,7 @@ while True:
                     player['direc'] = 'left'
                 i += 1
 
-            # create a copy of initial players if ever they want to request
+            # create a copy of initial players if ever they want to request restart
             init_players = copy.deepcopy(players)
 
             data += json.dumps(players)
@@ -342,6 +347,8 @@ while True:
         players_ready = 0
         restart_count = 0
         chat_lobby = ''
+        game_status = WAITING
+        recent_disconnect = ''
 
     # consistently returns the game status
     elif action == 'GET_STATUS':
@@ -379,6 +386,6 @@ while True:
 
     # send the response back to the client
     if data:
-        # to see which action is the problem - uncomment line below
+        # NOTE - to see which action is the problem - uncomment line below
         # print(action)
         s.sendto(data, address)

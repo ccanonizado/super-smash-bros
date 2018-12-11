@@ -552,6 +552,7 @@ class Game:
                         player.walk_c = walk_c
                         player.move = move
 
+    # ========================= METHODS TO MAKE REQUESTS TO SERVER =========================
     def send(self, message):
         self.s.sendto(str.encode(message), SERVER)
     
@@ -657,7 +658,9 @@ class Game:
 
     def checkReady(self):
         message = 'CHECK_READY'
-        self.send(message)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+        self.send(message)            
+
+    # NOTE - for the full API of the requests - please refer to Server.py                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 
 # main start of the program
 game = Game()
