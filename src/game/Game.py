@@ -138,16 +138,14 @@ class Game:
             elif self.status == GAME:
                 self.winner = ''
 
-                if self.initialized and self.playing:
-                    self.checkDisconnect()
-                    self.checkWinner()
-
                 self.clock.tick(FPS)
                 self.events()
                 self.update()
 
                 if self.initialized and self.playing:
                     self.updateAllPlayers()
+                    self.checkDisconnect()
+                    self.checkWinner()
 
                 self.draw()
             
@@ -278,6 +276,8 @@ class Game:
                 if collision:
                     player.pos[1] = collision[0].rect.top + 1
                     player.vel[1] = 0
+
+        self.updatePlayer()
         
         # except:
         #     quit()
@@ -519,7 +519,6 @@ class Game:
                         self.all_ready = False
 
                 elif action == 'UPDATE_ALL_PLAYERS':
-                    print("Hello")
                     message.pop(0)
                     message = ' '.join(message)
                     data = json.loads(message)
