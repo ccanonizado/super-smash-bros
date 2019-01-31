@@ -17,7 +17,7 @@ packet = tcp_packet_pb2.TcpPacket()
 
 # server parameters
 HOST = '202.92.144.45'
-PORT = 80
+PORT = 8000
 BUFFER = 1024
 
 class Chat:

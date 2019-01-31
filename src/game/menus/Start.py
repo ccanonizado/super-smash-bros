@@ -42,6 +42,12 @@ class Start:
 
         font = pg.font.Font(None, 100)
 
+        self.start_name_bg = START_NAME_BG.convert()
+        self.start_no_name_bg = START_NO_NAME_BG.convert()
+        self.start_character_bg = START_CHARACTER_BG.convert()
+        self.start_waiting_bg = START_WAITING_BG.convert()
+        self.start_name_exists_bg = START_NAME_EXISTS_BG.convert()
+
         # note - self.g.curr_player = current text of the input player name
 
         while self.g.status == START:
@@ -50,14 +56,14 @@ class Start:
                 self.g.checkName(self.g.curr_player)
 
             if screen == 'name':
-                self.g.screen.blit(START_NAME_BG, ORIGIN)
+                self.g.screen.blit(self.start_name_bg, ORIGIN)
             elif screen == 'no_name':
-                self.g.screen.blit(START_NO_NAME_BG, ORIGIN)
+                self.g.screen.blit(self.start_no_name_bg, ORIGIN)
             elif screen == 'character':
-                self.g.screen.blit(START_CHARACTER_BG, ORIGIN)
+                self.g.screen.blit(self.start_character_bg, ORIGIN)
                 self.drawStats()
             elif screen == 'waiting':
-                self.g.screen.blit(START_WAITING_BG, ORIGIN)
+                self.g.screen.blit(self.start_waiting_bg, ORIGIN)
                 text_surface = font.render(str(self.g.player_count), True, WHITE)
                 self.g.screen.blit(text_surface,(700,450))
                 
@@ -66,7 +72,7 @@ class Start:
                     # allow changing the name to player's own name
                     # even though technically - that name is taken
                     if self.g.curr_player != old_name: 
-                        self.g.screen.blit(START_NAME_EXISTS_BG, ORIGIN)
+                        self.g.screen.blit(self.start_name_exists_bg, ORIGIN)
 
                 text_surface = font.render(self.g.curr_player, True, WHITE)
                 self.g.screen.blit(text_surface, (355,355))

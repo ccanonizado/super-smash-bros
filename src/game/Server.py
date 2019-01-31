@@ -107,6 +107,7 @@ SERVER = (HOST, PORT)
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(SERVER)
 
+sessions = 1 # number of times the game has been reset
 players = {} # players dict with attributes
 init_players = {} # copy of initial players (for restarting)
 players_ready = 0 # must be equal to len(players) to start
@@ -120,7 +121,7 @@ print('Server is now up and running!')
 print('There must be 3-6 players ready before starting the game.')
 print('Just look here for updates whenever the client "Game.py" does something.')
 print()
-print('UPDATES:')
+print('SESSION #{} UPDATES:'.format(sessions))
 
 message_count = 0
 
@@ -205,29 +206,27 @@ while True:
 
         # starts game and sends to all player addresses
         elif action == 'START_GAME':
-            if players_ready == len(players) and len(players) >= 3 and len(players) <= 6:
+            if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
                 if not game_started:
-                    print("Initialized Game!")
+                    print("====== Started Game! ======")
                     game_started = True
+                    game_status = GAME
 
-                    try:
-                        chat = Chat()
-                        chat_lobby = chat.createLobby(6).lobby_id
-                        print("Created chat lobby: {}".format(chat_lobby))
-                        print("Players joined the lobby!")
+                    # try:
+                    #     chat = Chat()
+                    #     chat_lobby = chat.createLobby(6).lobby_id
+                    #     print("Created chat lobby: {}".format(chat_lobby))
 
-                        # broadcast chat_lobby to everyone
-                        data = 'JOIN_CHAT '
-                        data += str(chat_lobby)
-                        data = str.encode(data)
+                    #     # broadcast chat_lobby to everyone
+                    #     data = 'JOIN_CHAT '
+                    #     data += str(chat_lobby)
+                    #     data = str.encode(data)
 
-                        for player in players.values():
-                            s.sendto(data, player['address'])
+                    #     for player in players.values():
+                    #         s.sendto(data, player['address'])
 
-                    except:
-                        print("CHAT ERROR! Server might be down.")
-
-                    print("Game is now running.")
+                    # except:
+                    print("CHAT ERROR! Server might be down.")
 
                     i = 0
                     for player in players.values():
@@ -270,13 +269,42 @@ while True:
                     for player in players.values():
                         s.sendto(data, player['address'])
 
+        # changes game status to QUIT
+        elif action == 'QUIT_GAME':
+            
+            # increment sessions
+            sessions += 1
+
+            print('One player quit! Resetting server data.')
+            print()
+            print('SESSION #{} UPDATES:'.format(sessions))
+            data = 'QUIT_GAME'
+            data = str.encode(data)
+
+            game_status = QUIT
+            
+            for player in players.values():
+                s.sendto(data, player['address'])
+
+            # reset server data
+            players = {}
+            init_players = {}
+            players_ready = 0
+            restart_count = 0
+            chat_lobby = ''
+            game_started = False
+            game_status = WAITING
+            recent_disconnect = ''
+
         # increment restart_count
-        elif action == 'RESTART_REQUEST':
+        elif action == 'RESTART_REQUEST' and game_status != WAITING:
             restart_count += 1
 
             if (restart_count % len(players)) == 0:
                 # replace current players with the initial ones
                 players = copy.deepcopy(init_players)
+
+                print("===== Restarted Game! =====")
 
                 data = 'RESTART_GAME '
                 data += json.dumps(init_players)
@@ -289,7 +317,7 @@ while True:
                 continue
 
         # update single player
-        elif action == 'UPDATE_PLAYER':
+        elif action == 'UPDATE_PLAYER' and game_status != WAITING:
             message.pop(0) # remove action
             message = ' '.join(message)
             payload = json.loads(message)
@@ -313,13 +341,13 @@ while True:
             players[name]['move'] = move
 
         # updates all players
-        elif action == 'UPDATE_ALL_PLAYERS':
+        elif action == 'UPDATE_ALL_PLAYERS' and game_status != WAITING:
             data = 'UPDATE_ALL_PLAYERS '
             data += json.dumps(players)
             data = str.encode(data)
 
         # similar to update player but for decreasing the health
-        elif action == 'ATTACK_PLAYER':
+        elif action == 'ATTACK_PLAYER' and game_status != WAITING:
             health = float(players[message[1]]['health'])
             new_health = health - float(message[2])
             players[message[1]]['health'] = str(new_health)
@@ -338,34 +366,8 @@ while True:
 
             continue
 
-        # changes game status to QUIT
-        elif action == 'QUIT_GAME':
-            print('One player quit! Resetting server data.')
-            print()
-            print("NEW UPDATES:")
-            data = 'QUIT_GAME'
-            data = str.encode(data)
-
-            game_status = QUIT
-            
-            for player in players.values():
-                s.sendto(data, player['address'])
-
-            # reset server data
-            players = {}
-            init_players = {}
-            players_ready = 0
-            restart_count = 0
-            chat_lobby = ''
-            game_started = False
-            game_status = WAITING
-            recent_disconnect = ''
-
-            continue
-
-
         #end game detection
-        elif action == 'CHECK_WINNER':
+        elif action == 'CHECK_WINNER' and game_status != WAITING:
             alive_count = len(players)
             alive = ''
             for key, value in players.items():
@@ -379,7 +381,6 @@ while True:
                 data = 'CHECK_WINNER '
                 data += alive
                 data = str.encode(data)
-                game_status = WAITING
             else:
                 data = 'NONE'
                 data = str.encode(data)
