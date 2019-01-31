@@ -188,11 +188,7 @@ class Game:
                 # check for closing window
                 if event.type == pg.QUIT:                    
                     print("You quit in the middle of the game!")
-                    self.disconnectPlayer(self.curr_player)
-
-                    # if end game detected - quit other players as well
-                    if self.showed_end:
-                        self.quitGame()
+                    self.disconnectPlayer(self.curr_player, self.restart_request)
 
                     if self.playing:
                         self.playing = False
@@ -235,9 +231,18 @@ class Game:
                                 self.restart_request = True
                                 self.chat_messages.append('You sent a restart request!')
 
-                    elif event.key == pg.K_ESCAPE:
+                    elif event.key == pg.K_F2:
                         if self.showed_end:
                             self.quitGame()
+
+                    elif event.key == pg.K_ESCAPE:
+                        if self.showed_end:
+                            print("Thank you for playing!")
+                            self.disconnectPlayer(self.curr_player, self.restart_request)
+                            self.running = False
+                            self.s.close()
+                            pg.quit()
+                            quit()
 
                     else:
                         if self.chatting:
@@ -298,11 +303,12 @@ class Game:
                 self.chat_messages.append('===== {} won this round! ====='.format(self.winner))
                 self.chat_messages.append("-> Press F1 to restart the game")
                 self.chat_messages.append('   * Everyone must press F1 to restart')
+                self.chat_messages.append('')
+                self.chat_messages.append('-> Press F2 to go back to the main menu')
+                self.chat_messages.append('   * ONE F2 will put EVERYONE back')
+                self.chat_messages.append('')
                 self.chat_messages.append('-> Press Esc to exit the game')
-                self.chat_messages.append('   * Recreating is not supported for now')
-                self.chat_messages.append('   * If you want to recreate a game:')
-                self.chat_messages.append('     Simply run Game.py <ip_address> again')
-                self.chat_messages.append('! ENJOY, you may still chat !')
+                self.chat_messages.append('   * We hope you enjoyed playing!')
                 self.chat_messages.append('======================================')
 
                 self.showed_end = True
@@ -409,6 +415,9 @@ class Game:
                             if self.curr_player != n:
                                 self.enemy_sprites.add(player)
                         
+                        self.chat_messages.append('============ GAME START ============')
+                        self.chat_messages.append('Best of luck - may the best player win!')
+                        self.chat_messages.append('======================================')
                         self.status = GAME
                         self.playing = True                     
                         self.initialized = True
@@ -472,7 +481,6 @@ class Game:
                         self.chat = Chat(self)
                         try:
                             self.chat.connectToLobby(message[1], self.curr_player)
-                            self.chat_messages.append('You are in game {}!'.format(message[1]))
                             self.chat_thread = Thread(target=self.chat.receiveMessages)
                             self.chat_thread.daemon = True
                             self.chat_thread.start()
@@ -490,11 +498,31 @@ class Game:
                                 self.players.pop(message[1])
 
                 elif action == 'QUIT_GAME':
-                    print("Thank you for playing!")
-                    self.running = False
-                    self.s.close()
-                    pg.quit()
-                    quit()
+                    # reset game variables
+                    self.status = INTRO
+                    self.playing = False
+                    self.all_ready = False
+                    self.showed_end = False
+                    self.initialized = False
+                    self.created_chat = False
+                    self.name_available = True
+                    self.restart_request = False
+                    self.player_count = 0
+                    self.players = {}
+
+                    # reset player variables
+                    self.curr_player = ''
+                    self.chat_text = ''
+                    self.chatting = False
+                    self.chat_once = False
+                    self.chat_init = False
+                    self.chat_messages = []
+                    
+                    # reset sprite groups
+                    self.enemy_sprites = pg.sprite.Group()
+                    self.all_sprites = pg.sprite.Group()
+                    self.platforms = pg.sprite.Group()
+                    self.loadPlatforms()
 
                 elif action == 'CHECK_WINNER':
                     self.winner = message[1]
@@ -539,9 +567,13 @@ class Game:
         message += name
         self.send(message)
 
-    def disconnectPlayer(self, name):
+    def disconnectPlayer(self, name, restarted):
         message = 'DISCONNECT '
         message += name
+        if restarted:
+            message += ' TRUE'
+        else:
+            message += ' FALSE'
         self.send(message)
 
     def checkDisconnect(self):

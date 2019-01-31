@@ -155,7 +155,10 @@ while True:
             players_ready -= 1
             if(players_ready) < 0:
                 players_ready = 0
-            restart_count = 0
+            
+            if message[2] == 'TRUE':
+                restart_count -= 1
+
             recent_disconnect = message[1]
 
             # remove player from initial list - for the restart
@@ -165,6 +168,41 @@ while True:
             data = 'DISCONNECT '
             data += message[1]
             data = str.encode(data)
+
+            # if there are no more players - reset 
+            if len(players) == 0 and game_status == GAME:
+                
+                # increment sessions
+                sessions += 1
+
+                print('Resetting server data for new session.')
+                print()
+                print('SESSION #{} UPDATES:'.format(sessions))
+                
+                # reset server data
+                players = {}
+                init_players = {}
+                players_ready = 0
+                restart_count = 0
+                chat_lobby = ''
+                game_started = False
+                game_status = WAITING
+                recent_disconnect = ''
+
+            # if this player disconnected - check if eligible for restart
+            elif game_status != WAITING and (restart_count % len(players)) == 0:
+                # replace current players with the initial ones
+                players = copy.deepcopy(init_players)
+
+                print("===== Restarted Game! =====")
+
+                data = 'RESTART_GAME '
+                data += json.dumps(init_players)
+                data = str.encode(data)
+                game_status = GAME
+
+                for player in players.values():
+                    s.sendto(data, player['address'])
 
         # returns name of player who recently disconnected
         elif action == 'CHECK_DISCONNECT':
@@ -206,6 +244,7 @@ while True:
 
         # starts game and sends to all player addresses
         elif action == 'START_GAME':
+            data = 'NONE'
             if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
                 if not game_started:
                     print("====== Started Game! ======")
@@ -275,13 +314,11 @@ while True:
             # increment sessions
             sessions += 1
 
-            print('One player quit! Resetting server data.')
+            print('Resetting server data for new session.')
             print()
             print('SESSION #{} UPDATES:'.format(sessions))
             data = 'QUIT_GAME'
             data = str.encode(data)
-
-            game_status = QUIT
             
             for player in players.values():
                 s.sendto(data, player['address'])
@@ -364,8 +401,6 @@ while True:
             for player in players.values():
                 s.sendto(data, player['address'])
 
-            continue
-
         #end game detection
         elif action == 'CHECK_WINNER' and game_status != WAITING:
             alive_count = len(players)
@@ -388,7 +423,9 @@ while True:
         # send the response back to the client
         # NOTE - to see which action is the problem - uncomment line below
         # print(action)
-        s.sendto(data, address)
+
+        if data != 'NONE':
+            s.sendto(data, address)
 
     # consistently sending if game state is waiting
     if game_status == WAITING:
