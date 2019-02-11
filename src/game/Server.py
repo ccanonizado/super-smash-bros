@@ -323,6 +323,8 @@ while True:
             for player in players.values():
                 s.sendto(data, player['address'])
 
+            data = 'NONE'
+
             # reset server data
             players = {}
             init_players = {}
@@ -428,7 +430,7 @@ while True:
             s.sendto(data, address)
 
     # consistently sending if game state is waiting
-    if game_status == WAITING:
+    if game_status == WAITING and data != 'NONE':
         data = 'PLAYERS_READY '
         data += str(players_ready)
         data = str.encode(data)
