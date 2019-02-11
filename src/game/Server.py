@@ -245,7 +245,7 @@ while True:
         # starts game and sends to all player addresses
         elif action == 'START_GAME':
             data = 'NONE'
-            if players_ready == len(players) and len(players) >= 1 and len(players) <= 6:
+            if players_ready == len(players) and len(players) >= 2 and len(players) <= 6:
                 if not game_started:
                     print("====== Started Game! ======")
                     game_started = True

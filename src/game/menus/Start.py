@@ -94,11 +94,11 @@ class Start:
                         if screen == 'name':
                             self.g.status = INTRO
                             if enteredName:
-                                self.g.disconnectPlayer(self.g.curr_player)
+                                self.g.disconnectPlayer(self.g.curr_player, self.g.restart_request)
                         elif screen == 'no_name':
                             self.g.status = INTRO
                             if enteredName:
-                                self.g.disconnectPlayer(self.g.curr_player)
+                                self.g.disconnectPlayer(self.g.curr_player, self.g.restart_request)
                         elif screen == 'character':
                             screen = 'name'
                         elif screen == 'waiting':
