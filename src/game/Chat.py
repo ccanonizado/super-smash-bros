@@ -18,7 +18,7 @@ packet = tcp_packet_pb2.TcpPacket()
 # server parameters
 HOST = '202.92.144.45'
 PORT = 8000
-BUFFER = 1024
+BUFFER = 2048
 
 class Chat:
 	def __init__(self, game='none'):

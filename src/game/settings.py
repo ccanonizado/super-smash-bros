@@ -8,7 +8,7 @@ If the label does not exist for your new value, just create a new one.
 '''
 
 # game values
-TITLE = "Super Smash Bros"
+TITLE = "DEVS: Carlos Miguel (Cholo) Canonizado | Francheska Marie (Sky) Semilla | Shane Serrano"
 FULL_WIDTH = 1100
 GAME_WIDTH = 700
 HEIGHT = 700
