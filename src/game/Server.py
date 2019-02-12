@@ -118,7 +118,7 @@ game_status = WAITING # check settings.py for all game statuses
 recent_disconnect = '' # name of player who recently disconnected
 
 print('Server is now up and running!')
-print('There must be 3-6 players ready before starting the game.')
+print('There must be 2-6 players ready before starting the game.')
 print('Just look here for updates whenever the client "Game.py" does something.')
 print()
 print('SESSION #{} UPDATES:'.format(sessions))
