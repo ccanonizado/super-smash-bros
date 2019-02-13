@@ -224,18 +224,18 @@ class Game:
                                 print('CHAT ERROR! Server might be down!')
                             self.chat_text = '<Enter> disables movement!'
 
-                    elif event.key == pg.K_F1:
+                    elif not self.chatting and event.key == pg.K_r:
                         if self.showed_end:
                             if not self.restart_request:
                                 self.restartRequest()
                                 self.restart_request = True
                                 self.chat_messages.append('You sent a restart request!')
 
-                    elif event.key == pg.K_F2:
+                    elif not self.chatting and event.key == pg.K_m:
                         if self.showed_end:
                             self.quitGame()
 
-                    elif event.key == pg.K_ESCAPE:
+                    elif not self.chatting and event.key == pg.K_q:
                         if self.showed_end:
                             print("Thank you for playing!")
                             self.disconnectPlayer(self.curr_player, self.restart_request)
@@ -301,13 +301,13 @@ class Game:
 
                 self.chat_messages = []
                 self.chat_messages.append('===== {} won this round! ====='.format(self.winner))
-                self.chat_messages.append("-> Press F1 to restart the game")
-                self.chat_messages.append('   * Everyone must press F1 to restart')
+                self.chat_messages.append("-> Press R to restart the game")
+                self.chat_messages.append('   * Everyone must press R to restart')
                 self.chat_messages.append('')
-                self.chat_messages.append('-> Press F2 to go back to the main menu')
-                self.chat_messages.append('   * ONE F2 will put EVERYONE back')
+                self.chat_messages.append('-> Press M to go back to the main menu')
+                self.chat_messages.append('   * ONE press of M will put EVERYONE back')
                 self.chat_messages.append('')
-                self.chat_messages.append('-> Press Esc to exit the game')
+                self.chat_messages.append('-> Press Q to exit the game')
                 self.chat_messages.append('   * We hope you enjoyed playing!')
                 self.chat_messages.append('======================================')
 

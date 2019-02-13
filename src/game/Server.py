@@ -251,21 +251,21 @@ while True:
                     game_started = True
                     game_status = GAME
 
-                    try:
-                        chat = Chat()
-                        chat_lobby = chat.createLobby(6).lobby_id
-                        print("Created chat lobby: {}".format(chat_lobby))
+                    # try:
+                    #     chat = Chat()
+                    #     chat_lobby = chat.createLobby(6).lobby_id
+                    #     print("Created chat lobby: {}".format(chat_lobby))
 
-                        # broadcast chat_lobby to everyone
-                        data = 'JOIN_CHAT '
-                        data += str(chat_lobby)
-                        data = str.encode(data)
+                    #     # broadcast chat_lobby to everyone
+                    #     data = 'JOIN_CHAT '
+                    #     data += str(chat_lobby)
+                    #     data = str.encode(data)
 
-                        for player in players.values():
-                            s.sendto(data, player['address'])
+                    #     for player in players.values():
+                    #         s.sendto(data, player['address'])
 
-                    except:
-                        print("CHAT ERROR! Server might be down.")
+                    # except:
+                    #     print("CHAT ERROR! Server might be down.")
 
                     i = 0
                     for player in players.values():
